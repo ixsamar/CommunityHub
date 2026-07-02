@@ -632,7 +632,7 @@ axiosInstance.interceptors.response.use(
             },
             {
               timeout: ENV.API_TIMEOUT,
-              adapter: customAdapter,
+              adapter: process.env.NODE_ENV === 'test' ? customAdapter : undefined,
             },
           );
 
