@@ -1,0 +1,181 @@
+import React, { ComponentType, lazy, Suspense } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { LinkingOptions } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '../theme';
+import { useAuth } from '../features/auth/hooks/useAuth';
+import { SplashScreen } from '../features/auth/screens/SplashScreen';
+import {
+  AuthStackParamList,
+  CommunityStackParamList,
+  PostsStackParamList,
+  ProfileStackParamList,
+  HomeTabParamList,
+  RootStackParamList,
+} from './types';
+
+// Generic lazy loading utility component wrapper
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+const lazyLoad = <T extends ComponentType<any>>(
+  importFunc: () => Promise<{ default: T }>
+) => {
+  const LazyComponent = lazy(importFunc);
+  
+  const LazyWrapper = (props: React.ComponentProps<T>) => (
+    <Suspense
+      fallback={
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="small" />
+        </View>
+      }>
+      <LazyComponent {...props} />
+    </Suspense>
+  );
+  
+  LazyWrapper.displayName = 'LazyWrapper';
+  return LazyWrapper;
+};
+
+// Lazy loaded screen components
+const LoginScreen = lazyLoad(() =>
+  import('../features/auth/screens/LoginScreen').then(m => ({ default: m.LoginScreen }))
+);
+const CommunityListScreen = lazyLoad(() =>
+  import('../features/community/screens/CommunityListScreen').then(m => ({ default: m.CommunityListScreen }))
+);
+const CommunityDetailScreen = lazyLoad(() =>
+  import('../features/community/screens/CommunityDetailScreen').then(m => ({ default: m.CommunityDetailScreen }))
+);
+const PostListScreen = lazyLoad(() =>
+  import('../features/posts/screens/PostListScreen').then(m => ({ default: m.PostListScreen }))
+);
+const CreatePostScreen = lazyLoad(() =>
+  import('../features/posts/screens').then(m => ({default: m.CreatePostScreen}))
+);
+const ProfileScreen = lazyLoad(() =>
+  import('../features/profile/screens/ProfileScreen').then(m => ({ default: m.ProfileScreen }))
+);
+
+const RootStack = createNativeStackNavigator<RootStackParamList>();
+const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+const CommunityStack = createNativeStackNavigator<CommunityStackParamList>();
+const PostsStack = createNativeStackNavigator<PostsStackParamList>();
+const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
+const Tab = createBottomTabNavigator<HomeTabParamList>();
+
+const AuthNavigator = () => (
+  <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+    <AuthStack.Screen name="Login" component={LoginScreen} />
+  </AuthStack.Navigator>
+);
+
+const CommunityNavigator = () => (
+  <CommunityStack.Navigator screenOptions={{ headerShown: false }}>
+    <CommunityStack.Screen name="CommunityList" component={CommunityListScreen} />
+    <CommunityStack.Screen name="CommunityDetails" component={CommunityDetailScreen} />
+  </CommunityStack.Navigator>
+);
+
+const PostsNavigator = () => (
+  <PostsStack.Navigator screenOptions={{ headerShown: false }}>
+    <PostsStack.Screen name="PostList" component={PostListScreen} />
+    <PostsStack.Screen name="CreatePost" component={CreatePostScreen} />
+  </PostsStack.Navigator>
+);
+
+const ProfileNavigator = () => (
+  <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
+    <ProfileStack.Screen name="Profile" component={ProfileScreen} />
+  </ProfileStack.Navigator>
+);
+
+const TabNavigator = () => {
+  const { colors } = useTheme();
+
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
+        tabBarIcon: ({ color, size, focused }) => {
+          let iconName = '';
+          if (route.name === 'CommunityTab') {
+            iconName = focused ? 'people' : 'people-outline';
+          } else if (route.name === 'PostsTab') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+          } else if (route.name === 'ProfileTab') {
+            iconName = focused ? 'person' : 'person-outline';
+          }
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+      })}>
+      <Tab.Screen
+        name="CommunityTab"
+        component={CommunityNavigator}
+        options={{ title: 'Communities' }}
+      />
+      <Tab.Screen name="PostsTab" component={PostsNavigator} options={{ title: 'Posts' }} />
+      <Tab.Screen name="ProfileTab" component={ProfileNavigator} options={{ title: 'Profile' }} />
+    </Tab.Navigator>
+  );
+};
+
+export const RootNavigator = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <SplashScreen />;
+  }
+
+  return (
+    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      {!isAuthenticated ? (
+        <RootStack.Screen name="Auth" component={AuthNavigator} />
+      ) : (
+        <RootStack.Screen name="App" component={TabNavigator} />
+      )}
+    </RootStack.Navigator>
+  );
+};
+
+// Deep linking configuration mapping routes
+export const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['communityhub://', 'https://communityhub.com'],
+  config: {
+    screens: {
+      Auth: {
+        screens: {
+          Login: 'login',
+        },
+      },
+      App: {
+        screens: {
+          CommunityTab: {
+            screens: {
+              CommunityList: 'communities',
+              CommunityDetails: 'communities/:communityId',
+            },
+          },
+          PostsTab: {
+            screens: {
+              PostList: 'posts',
+              CreatePost: 'posts/new',
+            },
+          },
+          ProfileTab: {
+            screens: {
+              Profile: 'profile',
+            },
+          },
+        },
+      },
+    },
+  },
+};

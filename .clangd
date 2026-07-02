@@ -1,0 +1,4 @@
+If:
+  PathExclude:
+    - node_modules/.*
+    - ios/Pods/.*
