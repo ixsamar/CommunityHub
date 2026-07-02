@@ -1,0 +1,4 @@
+export const GLOBAL_CONSTS = {
+  PAGE_LIMIT: 10,
+  DEFAULT_DEBOUNCE_MS: 300,
+};

@@ -3,14 +3,14 @@ import { StatusBar } from 'react-native';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, Theme } from '@react-navigation/native';
-import { store } from './src/app/store';
-import { useTheme } from './src/theme';
-import { RootNavigator, linking } from './src/navigation/RootNavigator';
-import { ErrorBoundary } from './src/common/components/ErrorBoundary';
-import { OfflineBanner } from './src/common/components/OfflineBanner';
-import { useNetInfo } from './src/common/hooks/useNetInfo';
-import { ToastProvider } from './src/common/components/ToastContext';
-import { OfflineManager } from './src/common/services/offline/OfflineManager';
+import { store } from './src/Store/store';
+import { useTheme } from './src/Utils/themeIndex';
+import { RootNavigator, linking } from './src/Routes/Index';
+import { ErrorBoundary } from './src/Components/common/ErrorBoundary';
+import { OfflineBanner } from './src/Components/common/OfflineBanner';
+import { useNetInfo } from './src/Utils/hooks/useNetInfo';
+import { ToastProvider } from './src/Components/common/ToastContext';
+import { OfflineManager } from './src/APIServices/offline/OfflineManager';
 
 const InnerApp = () => {
   const currentTheme = useTheme();
