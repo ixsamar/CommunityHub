@@ -64,9 +64,7 @@ export class AuthRepository implements IAuthRepository {
   }
 
   public async logout(): Promise<void> {
-    secureStorage.delete('auth_token');
-    secureStorage.delete('auth_refresh_token');
-    secureStorage.delete('auth_user');
+    secureStorage.clearAll();
   }
 
   public async getCurrentUser(): Promise<User | null> {

@@ -661,9 +661,7 @@ axiosInstance.interceptors.response.use(
           processQueue(refreshError, null);
           isRefreshing = false;
 
-          secureStorage.delete('auth_token');
-          secureStorage.delete('auth_refresh_token');
-          secureStorage.delete('auth_user');
+          secureStorage.clearAll();
 
           try {
             const {store} = require('../Store/store');
@@ -676,9 +674,7 @@ axiosInstance.interceptors.response.use(
           return Promise.reject(new Error('Session expired. Please log in again.'));
         }
       } else {
-        secureStorage.delete('auth_token');
-        secureStorage.delete('auth_refresh_token');
-        secureStorage.delete('auth_user');
+        secureStorage.clearAll();
 
         try {
           const {store} = require('../Store/store');
