@@ -14,6 +14,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     '\\.(jpg|jpeg|png|gif|svg)$': '<rootDir>/src/Utils/__mocks__/fileMock.js',
+    '^@env$': '<rootDir>/src/Utils/__mocks__/envMock.js',
   },
   testRegex: '(/__tests__/.*\\.)(test|spec)\\.(jsx?|tsx?)$',
   testPathIgnorePatterns: [

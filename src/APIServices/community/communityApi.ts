@@ -1,4 +1,4 @@
-import {baseApi} from '../baseApi';
+import {httpClient as shellHttpClient} from '../httpClient';
 import {
   Community,
   CommunityQueryParams,
@@ -8,7 +8,7 @@ import {
 import {CommunityRepository} from './communityRepository';
 import {RootState} from '../../Store/store';
 
-export const communityApi = baseApi.injectEndpoints({
+export const communityApi = shellHttpClient().injectEndpoints({
   endpoints: builder => ({
     getCommunities: builder.query<PaginatedResponse<Community>, CommunityQueryParams>({
       async queryFn(args) {

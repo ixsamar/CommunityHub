@@ -1,6 +1,6 @@
 import {NetworkResult} from '../repository';
 import {UserProfile} from '../../Constance/globalTypes';
-import {httpClient} from '../httpClient';
+import {axiosInstance} from '../httpClient';
 
 export interface IProfileRepository {
   getProfile(userId: string): NetworkResult<UserProfile>;
@@ -10,7 +10,7 @@ export interface IProfileRepository {
 export class ProfileRepository implements IProfileRepository {
   public async getProfile(userId: string): NetworkResult<UserProfile> {
     try {
-      const response = await httpClient.get<UserProfile>(`/profile/${userId}`);
+      const response = await axiosInstance.get<UserProfile>(`/profile/${userId}`);
       return {data: response.data};
     } catch (error: unknown) {
       const err = error as Error;
@@ -28,7 +28,7 @@ export class ProfileRepository implements IProfileRepository {
     data: Partial<UserProfile>,
   ): NetworkResult<UserProfile> {
     try {
-      const response = await httpClient.put<UserProfile>(`/profile/${userId}`, data);
+      const response = await axiosInstance.put<UserProfile>(`/profile/${userId}`, data);
       return {data: response.data};
     } catch (error: unknown) {
       const err = error as Error;

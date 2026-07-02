@@ -6,7 +6,7 @@ import {
   PaginatedResponse,
   CreateCommunityRequest,
 } from '../../Constance/globalTypes';
-import {httpClient} from '../httpClient';
+import {axiosInstance} from '../httpClient';
 import {StorageRepository} from '../offline/StorageRepository';
 import {QueueManager} from '../offline/QueueManager';
 import {Logger} from '../../Utils/logger';
@@ -98,7 +98,7 @@ export class CommunityRepository implements ICommunityRepository {
     params: CommunityQueryParams,
     cacheKey: string,
   ): Promise<PaginatedResponse<Community>> {
-    const response = await httpClient.get<PaginatedResponse<Community>>('/communities', {
+    const response = await axiosInstance.get<PaginatedResponse<Community>>('/communities', {
       params,
     });
 
@@ -188,7 +188,7 @@ export class CommunityRepository implements ICommunityRepository {
   }
 
   private async fetchAndCacheCommunityById(id: string, cacheKey: string): Promise<Community> {
-    const response = await httpClient.get<Community>(`/communities/${id}`);
+    const response = await axiosInstance.get<Community>(`/communities/${id}`);
 
     StorageRepository.set(cacheKey, response.data, 600);
 
@@ -251,7 +251,7 @@ export class CommunityRepository implements ICommunityRepository {
         };
       }
 
-      const response = await httpClient.post<Community>(`/communities/${id}/join`);
+      const response = await axiosInstance.post<Community>(`/communities/${id}/join`);
       StorageRepository.set(cacheKey, response.data, 600);
       return {data: response.data};
     } catch (error: unknown) {
@@ -305,7 +305,7 @@ export class CommunityRepository implements ICommunityRepository {
         };
       }
 
-      const response = await httpClient.post<Community>(`/communities/${id}/leave`);
+      const response = await axiosInstance.post<Community>(`/communities/${id}/leave`);
       StorageRepository.set(cacheKey, response.data, 600);
       return {data: response.data};
     } catch (error: unknown) {
@@ -354,7 +354,7 @@ export class CommunityRepository implements ICommunityRepository {
         };
       }
 
-      const response = await httpClient.post<Community>('/communities', community);
+      const response = await axiosInstance.post<Community>('/communities', community);
       StorageRepository.set(`community_detail_${response.data.id}`, response.data, 600);
       return {data: response.data};
     } catch (error: unknown) {

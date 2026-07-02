@@ -1,6 +1,7 @@
 import axios, {InternalAxiosRequestConfig, AxiosResponse, AxiosAdapter} from 'axios';
 import {secureStorage, storage} from '../Utils/mmkv';
 import {ENV} from '../Constance/commonURLs';
+import type {baseApi} from './baseApi';
 
 const customAdapter: AxiosAdapter = async config => {
   const url = config.url || '';
@@ -567,16 +568,16 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-export const httpClient = axios.create({
+export const axiosInstance = axios.create({
   baseURL: ENV.API_URL,
   timeout: ENV.API_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },
-  adapter: customAdapter,
+  adapter: process.env.NODE_ENV === 'test' ? customAdapter : undefined,
 });
 
-httpClient.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = secureStorage.getString('auth_token');
     if (token && config.headers) {
@@ -590,7 +591,7 @@ httpClient.interceptors.request.use(
   },
 );
 
-httpClient.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
@@ -609,7 +610,7 @@ httpClient.interceptors.response.use(
         })
           .then(token => {
             originalRequest.headers.Authorization = `Bearer ${token}`;
-            return httpClient(originalRequest);
+            return axiosInstance(originalRequest);
           })
           .catch(err => {
             return Promise.reject(err);
@@ -654,7 +655,7 @@ httpClient.interceptors.response.use(
           isRefreshing = false;
 
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return httpClient(originalRequest);
+          return axiosInstance(originalRequest);
         } catch (refreshError) {
           console.error('[Token Refresh Error] Refresh token is invalid or expired.', refreshError);
           processQueue(refreshError, null);
@@ -696,3 +697,8 @@ httpClient.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+export const httpClient = (): typeof baseApi => {
+  const {baseApi: apiInstance} = require('./baseApi');
+  return apiInstance;
+};

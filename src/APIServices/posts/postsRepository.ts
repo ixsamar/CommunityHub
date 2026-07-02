@@ -1,7 +1,7 @@
 import NetInfo from '@react-native-community/netinfo';
 import {NetworkResult} from '../repository';
 import {Post, CreatePostRequest} from '../../Constance/globalTypes';
-import {httpClient} from '../httpClient';
+import {axiosInstance} from '../httpClient';
 import {StorageRepository} from '../offline/StorageRepository';
 import {QueueManager} from '../offline/QueueManager';
 import {Logger} from '../../Utils/logger';
@@ -79,7 +79,7 @@ export class PostsRepository implements IPostsRepository {
     params: {communityId?: string},
     cacheKey: string,
   ): Promise<Post[]> {
-    const response = await httpClient.get<Post[]>('/posts', {params});
+    const response = await axiosInstance.get<Post[]>('/posts', {params});
 
     StorageRepository.set(cacheKey, response.data, 120);
 
@@ -131,7 +131,7 @@ export class PostsRepository implements IPostsRepository {
         };
       }
 
-      const response = await httpClient.post<Post>('/posts', {...post, clientPostId: tempId});
+      const response = await axiosInstance.post<Post>('/posts', {...post, clientPostId: tempId});
       return {data: response.data};
     } catch (error: unknown) {
       const err = error as Error;

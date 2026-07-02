@@ -1,8 +1,8 @@
-import {baseApi} from '../baseApi';
+import {httpClient as shellHttpClient} from '../httpClient';
 import {Post, CreatePostRequest} from '../../Constance/globalTypes';
 import {PostsRepository} from './postsRepository';
 
-export const postsApi = baseApi.injectEndpoints({
+export const postsApi = shellHttpClient().injectEndpoints({
   endpoints: builder => ({
     getPosts: builder.query<Post[], {communityId?: string}>({
       async queryFn(params) {

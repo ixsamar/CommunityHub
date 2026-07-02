@@ -1,7 +1,7 @@
 import {NetworkResult} from '../repository';
 import {AuthResponse, User} from '../../Constance/globalTypes';
 import {secureStorage} from '../../Utils/mmkv';
-import {httpClient} from '../httpClient';
+import {axiosInstance} from '../httpClient';
 
 export interface IAuthRepository {
   login(credentials: Record<string, string>): NetworkResult<AuthResponse>;
@@ -13,7 +13,7 @@ export interface IAuthRepository {
 export class AuthRepository implements IAuthRepository {
   public async login(credentials: Record<string, string>): NetworkResult<AuthResponse> {
     try {
-      const response = await httpClient.post<AuthResponse & {refreshToken: string}>(
+      const response = await axiosInstance.post<AuthResponse & {refreshToken: string}>(
         '/auth/login',
         credentials,
       );
@@ -39,7 +39,7 @@ export class AuthRepository implements IAuthRepository {
 
   public async refreshToken(refreshToken: string): NetworkResult<AuthResponse> {
     try {
-      const response = await httpClient.post<AuthResponse & {refreshToken: string}>(
+      const response = await axiosInstance.post<AuthResponse & {refreshToken: string}>(
         '/auth/refresh',
         {
           refreshToken,

@@ -1,3 +1,5 @@
+import {images} from './Images';
+
 export interface ColorTokens {
   primary: string;
   primaryDark: string;
@@ -121,4 +123,50 @@ export const colors: {light: ColorTokens; dark: ColorTokens} = {
     skeleton: 'hsl(222, 30%, 16%)',
     skeletonHighlight: 'hsl(222, 25%, 22%)',
   },
+};
+
+export const COLORS = {
+  LIGHT_GRAY: '#EFEFEF',
+  DARK_BLUE: '#001D4C',
+  Blue: 'blue',
+  LIGHT_BLUE: '#D1EEFF',
+  AzureBlue: '#e3e9af',
+  TITLE_COLOR: 'red',
+  WHITE: '#FFFFFF',
+  BLACK: '#000000',
+  GRAY: '#757575',
+  Back: '0000',
+  BlackGray: '#222222',
+  EXTLight_GRAY: '#c7d1c9',
+  Smoot_Gray: '#cccaca',
+  BackgroundColor: '#EFEFEF',
+  Driftwood: '#8b8a35',
+  DarkGray: '#9A9A9A',
+  Gray: '#8D8E90',
+  GunmetalGray: '#818589',
+  LightGray: '#D3D3D3',
+  PewterGray: '#899499',
+  Platinum: '#E5E4E2',
+  Silver: '#C0C0C0',
+  Smoke: '#848884',
+  SteelGray: '#71797E',
+  Merino: '#F5EEE2',
+  Sycamore: '#987A36',
+  Success: '#5cb85c',
+  SmoothSuccess: '#a3faf4',
+  DarkSuccess: '#2f653c',
+  SmoothTomato: '#fAE0E1',
+  Placeholder: '#8e8e8e',
+  Tomato: 'tomato',
+  waterBlue: '#3a86ff',
+  hippieBlue: '#6698bc',
+  heather: '#C3D1DA',
+  Positive: 'green',
+  OrangePending: '#d36b08',
+  OrangeLight: '#FF5602',
+  Negitive: 'orange',
+  LightOrange: '#FFFEFE3',
+  DarkBrown: '#92722A',
+  PaleGreen: '#D1F1CE',
+  BorderColor: '#d1bc6d',
 };
