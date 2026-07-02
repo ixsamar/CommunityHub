@@ -78,3 +78,5 @@ yarn-error.log
 .env.production
 .env.local
 backend/.env
+src/Constance/env.ts
+src/Constance/env.production.ts
