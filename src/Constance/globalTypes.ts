@@ -75,6 +75,7 @@ export interface CreatePostRequest {
 
 export type AuthStackParamList = {
   Login: undefined;
+  Register: undefined;
 };
 
 export type CommunityStackParamList = {
@@ -85,7 +86,7 @@ export type CommunityStackParamList = {
 export type PostsStackParamList = {
   PostList: undefined;
   PostDetails: {postId: string};
-  CreatePost: {communityId?: string} | undefined;
+  CreatePost: {communityId?: string; editPostId?: string} | undefined;
 };
 
 export type ProfileStackParamList = {

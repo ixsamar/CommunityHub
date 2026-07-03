@@ -7,14 +7,14 @@ const {
   joinCommunity,
   leaveCommunity,
 } = require('../controllers/communityController');
-const { protect } = require('../middleware/auth');
+const { protect, optionalProtect } = require('../middleware/auth');
 
 router.route('/')
-  .get(protect, getCommunities)
+  .get(optionalProtect, getCommunities)
   .post(protect, createCommunity);
 
 router.route('/:id')
-  .get(protect, getCommunityById);
+  .get(optionalProtect, getCommunityById);
 
 router.post('/:id/join', protect, joinCommunity);
 router.post('/:id/leave', protect, leaveCommunity);

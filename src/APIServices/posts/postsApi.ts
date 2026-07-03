@@ -4,7 +4,7 @@ import {PostsRepository} from './postsRepository';
 
 export const postsApi = shellHttpClient().injectEndpoints({
   endpoints: builder => ({
-    getPosts: builder.query<Post[], {communityId?: string}>({
+    getPosts: builder.query<Post[], {communityId?: string; page?: number; limit?: number}>({
       async queryFn(params) {
         const repo = new PostsRepository();
         const result = await repo.getPosts(params);
@@ -146,8 +146,41 @@ export const postsApi = shellHttpClient().injectEndpoints({
         }
       },
     }),
+
+    getPostById: builder.query<Post, string>({
+      async queryFn(id) {
+        const repo = new PostsRepository();
+        const result = await repo.getPostById(id);
+        if (result.error) return {error: result.error as any};
+        return {data: result.data!};
+      },
+    }),
+
+    updatePost: builder.mutation<Post, {id: string; post: CreatePostRequest}>({
+      async queryFn({id, post}) {
+        const repo = new PostsRepository();
+        const result = await repo.updatePost(id, post);
+        if (result.error) return {error: result.error as any};
+        return {data: result.data!};
+      },
+    }),
+
+    deletePost: builder.mutation<void, string>({
+      async queryFn(id) {
+        const repo = new PostsRepository();
+        const result = await repo.deletePost(id);
+        if (result.error) return {error: result.error as any};
+        return {data: undefined};
+      },
+    }),
   }),
   overrideExisting: true,
 });
 
-export const {useGetPostsQuery, useCreatePostMutation} = postsApi;
+export const {
+  useGetPostsQuery,
+  useCreatePostMutation,
+  useGetPostByIdQuery,
+  useUpdatePostMutation,
+  useDeletePostMutation,
+} = postsApi;

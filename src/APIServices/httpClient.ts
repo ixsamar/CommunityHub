@@ -688,7 +688,7 @@ axiosInstance.interceptors.response.use(
 
     const status = error.response?.status;
     const message = error.response?.data?.message || error.message;
-    console.error(`[API Error] Status: ${status || 'Network Error'} | Message: ${message}`);
+    console.log(`[API Error] Status: ${status || 'Network Error'} | Message: ${message}`);
 
     return Promise.reject(error);
   },

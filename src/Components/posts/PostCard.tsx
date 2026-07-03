@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import {LazyImage} from '../common/LazyImage';
 import {
@@ -20,14 +21,53 @@ import {postsApi} from '../../APIServices/posts/postsApi';
 import {SyncManager} from '../../APIServices/offline/SyncManager';
 import {QueueManager} from '../../APIServices/offline/QueueManager';
 import {Logger} from '../../Utils/logger';
+import {useNavigation} from '@react-navigation/native';
+import {useAuth} from '../../Screens/auth/hooks/useAuth';
+import {useToast} from '../common/ToastContext';
 
 interface Props {
   post: Post;
+  onPress?: () => void;
+  isDetail?: boolean;
 }
 
-export const PostCard: React.FC<Props> = React.memo(({post}) => {
+export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = false}) => {
   const {colors, typography, spacing, borderRadius} = useTheme();
   const dispatch = useAppDispatch();
+  const navigation = useNavigation<any>();
+  const {user} = useAuth();
+  const {showToast} = useToast();
+  const [deletePost] = postsApi.useDeletePostMutation();
+
+  const isAuthor = !!(user?.id && post.authorId && user.id === post.authorId);
+  const isWithinOneHour = Date.now() - new Date(post.createdAt).getTime() <= 60 * 60 * 1000;
+
+  const handleEdit = React.useCallback(() => {
+    navigation.navigate('CreatePost', {editPostId: post.id});
+  }, [navigation, post.id]);
+
+  const handleDelete = React.useCallback(() => {
+    Alert.alert(
+      'Delete Post',
+      'Are you sure you want to delete this post permanently?',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deletePost(post.id).unwrap();
+              showToast('Post deleted successfully!', 'success');
+            } catch (err: any) {
+              showToast(err.data?.message || err.message || 'Failed to delete post.', 'error');
+            }
+          },
+        },
+      ],
+      {cancelable: true},
+    );
+  }, [deletePost, post.id, showToast]);
 
   const handleRetry = React.useCallback(() => {
     Logger.info(`Manual retry triggered for post: ${post.clientPostId || post.id}`, 'PostCard');
@@ -86,15 +126,16 @@ export const PostCard: React.FC<Props> = React.memo(({post}) => {
     : '';
   const accessibilityLabel = `Post by ${post.authorName} on ${formatPostDate(post.createdAt)}. Title: ${post.title}. Content: ${post.content}. ${statusInfo}`;
 
+  const CardContainer = onPress ? TouchableOpacity : View;
+
   return (
-    <View
-      accessible={true}
-      accessibilityRole="text"
-      accessibilityLabel={accessibilityLabel}
+    <CardContainer
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : 1}
       style={[
         styles.card,
         {
-          backgroundColor: colors.card,
+          backgroundColor: colors.surface,
           borderColor: colors.border,
           padding: spacing.md || wp('4%'),
           marginVertical: hp('0.8%'),
@@ -172,6 +213,30 @@ export const PostCard: React.FC<Props> = React.memo(({post}) => {
             )}
           </View>
         )}
+
+        {!post.isPending && !isDetail && isAuthor && (
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              onPress={handleEdit}
+              style={styles.iconBtn}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+              accessibilityRole="button"
+              accessibilityLabel="Edit post">
+              <Icon name="create-outline" size={18} color={colors.primary} />
+            </TouchableOpacity>
+
+            {isWithinOneHour && (
+              <TouchableOpacity
+                onPress={handleDelete}
+                style={[styles.iconBtn, {marginLeft: wp('3.5%')}]}
+                hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+                accessibilityRole="button"
+                accessibilityLabel="Delete post">
+                <Icon name="trash-outline" size={18} color={colors.error} />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
       </View>
 
       {}
@@ -187,6 +252,8 @@ export const PostCard: React.FC<Props> = React.memo(({post}) => {
       {}
       <Text
         maxFontSizeMultiplier={1.3}
+        numberOfLines={isDetail ? undefined : 2}
+        ellipsizeMode={isDetail ? undefined : 'tail'}
         style={[typography.bodyMedium, {color: colors.text, lineHeight: 20}]}>
         {post.content}
       </Text>
@@ -210,7 +277,7 @@ export const PostCard: React.FC<Props> = React.memo(({post}) => {
           ))}
         </ScrollView>
       )}
-    </View>
+    </CardContainer>
   );
 });
 
@@ -274,5 +341,12 @@ const styles = StyleSheet.create({
   attachedImage: {
     width: '100%',
     height: '100%',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconBtn: {
+    padding: 4,
   },
 });

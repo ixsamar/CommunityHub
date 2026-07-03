@@ -7,6 +7,7 @@ import {
   Platform,
   Switch,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {useForm, FormProvider} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -18,15 +19,18 @@ import {useTheme} from '../../Utils/themeIndex';
 import {FormInput} from '../../Components/common/FormInput';
 import {FormPasswordInput} from '../../Components/common/FormPasswordInput';
 import {Button} from '../../Components/common/Button';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {LoadingOverlay} from '../../Components/common/LoadingOverlay';
 import {useToast} from '../../Components/common/ToastContext';
 import {useAuth} from './hooks/useAuth';
 import {loginSchema, LoginFormValues} from '../../Utils/validation';
 import {BiometricsService} from '../../APIServices/biometricsService';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useNavigation} from '@react-navigation/native';
 
 export const LoginScreen = () => {
   const {colors, typography} = useTheme();
+  const navigation = useNavigation();
   const {login, biometricLogin, toggleBiometricEnrollment} = useAuth();
   const {showToast} = useToast();
 
@@ -57,36 +61,65 @@ export const LoginScreen = () => {
   }, []);
 
   const onSubmit = async (data: LoginFormValues) => {
-    setLoading(true);
-    const result = await login({
-      email: data.email,
-      password: data.password,
-    });
-    setLoading(false);
+    try {
+      setLoading(true);
+      const result = await login({
+        email: data.email,
+        password: data.password,
+      });
 
-    if (result.success) {
-      showToast('Logged in successfully', 'success');
+      if (result.success) {
+        showToast('Logged in successfully', 'success');
 
-      if (biometricsAvailable) {
-        await toggleBiometricEnrollment(enableBiometricsOptIn, {
-          email: data.email,
-          password: data.password,
-        });
+        if (biometricsAvailable) {
+          await toggleBiometricEnrollment(enableBiometricsOptIn, {
+            email: data.email,
+            password: data.password,
+          });
+        }
+        navigation.goBack();
+      } else {
+        if (result.error === 'User not found. Please register first.') {
+          Alert.alert(
+            'Account Not Found',
+            'No account matches this email address. Would you like to register a new account?',
+            [
+              {text: 'Cancel', style: 'cancel'},
+              {
+                text: 'Register',
+                onPress: () => {
+                  (navigation as any).navigate('Register');
+                },
+              },
+            ],
+            {cancelable: true},
+          );
+        } else {
+          showToast(result.error || 'Login failed. Please check your credentials.', 'error');
+        }
       }
-    } else {
-      showToast(result.error || 'Login failed. Please check your credentials.', 'error');
+    } catch (e: any) {
+      showToast(e.message || 'An error occurred during login.', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleBiometricLogin = async () => {
-    setLoading(true);
-    const result = await biometricLogin();
-    setLoading(false);
+    try {
+      setLoading(true);
+      const result = await biometricLogin();
 
-    if (result.success) {
-      showToast('Authenticated with biometrics', 'success');
-    } else {
-      showToast(result.error || 'Biometric authentication failed.', 'error');
+      if (result.success) {
+        showToast('Authenticated with biometrics', 'success');
+        navigation.goBack();
+      } else {
+        showToast(result.error || 'Biometric authentication failed.', 'error');
+      }
+    } catch (e: any) {
+      showToast(e.message || 'An error occurred during biometric login.', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,6 +127,18 @@ export const LoginScreen = () => {
     <SafeAreaView
       style={{flex: 1, backgroundColor: colors.background}}
       edges={['top', 'bottom', 'left', 'right']}>
+      {/* Header Row with Back Button */}
+      <View style={styles.headerRow}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backBtn}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Go back">
+          <Icon name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}>
@@ -161,6 +206,15 @@ export const LoginScreen = () => {
                 </Text>
               </TouchableOpacity>
             )}
+
+            <TouchableOpacity
+              onPress={() => (navigation as any).navigate('Register')}
+              style={styles.registerLink}
+              activeOpacity={0.7}>
+              <Text style={[typography.bodySmall, {color: colors.primary, fontWeight: '600'}]}>
+                Don't have an account? Sign Up
+              </Text>
+            </TouchableOpacity>
           </View>
         </FormProvider>
       </KeyboardAvoidingView>
@@ -171,6 +225,15 @@ export const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  headerRow: {
+    height: hp('6%'),
+    justifyContent: 'center',
+    paddingHorizontal: wp('4%'),
+  },
+  backBtn: {
+    padding: 6,
+    alignSelf: 'flex-start',
   },
   innerContainer: {
     flex: 1,
@@ -198,5 +261,10 @@ const styles = StyleSheet.create({
     width: wp('90%'),
     alignSelf: 'center',
     backgroundColor: 'transparent',
+  },
+  registerLink: {
+    marginTop: hp('2.5%'),
+    alignItems: 'center',
+    padding: hp('1%'),
   },
 });

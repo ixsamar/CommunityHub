@@ -66,6 +66,29 @@ export class AuthService {
     return {success: false, error: 'Unknown authentication error.'};
   }
 
+  public async register(
+    credentials: Record<string, string>,
+  ): Promise<{success: boolean; error?: string}> {
+    const result = await this.authRepository.register(credentials);
+
+    if (result.error) {
+      return {success: false, error: result.error.message};
+    }
+
+    if (result.data) {
+      const {user, token} = result.data;
+      const refreshToken = secureStorage.getString('auth_refresh_token') || '';
+
+      const {store} = require('../../Store/store');
+      const {setCredentials} = require('../../Store/slices/authSlice');
+      store.dispatch(setCredentials({user, token, refreshToken}));
+
+      return {success: true};
+    }
+
+    return {success: false, error: 'Unknown registration error.'};
+  }
+
   public async logout(): Promise<void> {
     await this.authRepository.logout();
 

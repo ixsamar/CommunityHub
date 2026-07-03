@@ -79,8 +79,7 @@ const ToastItem: React.FC<{item: ToastMessage; onDismiss: (id: string) => void}>
           shadowOpacity: 0.1,
           shadowRadius: 6,
           elevation: 5,
-          bottom: isSnackbar ? hp('4%') : undefined,
-          top: !isSnackbar ? hp('6%') : undefined,
+          marginBottom: hp('10%'),
         },
       ]}>
       <View style={styles.contentContainer}>
@@ -109,21 +108,11 @@ const ToastItem: React.FC<{item: ToastMessage; onDismiss: (id: string) => void}>
 };
 
 export const ToastContainer: React.FC<ToastContainerProps> = ({toasts, onDismiss}) => {
-  const topToasts = toasts.filter(t => !t.action);
-  const bottomToasts = toasts.filter(t => !!t.action);
-
   return (
     <>
-      {topToasts.length > 0 && (
-        <View style={styles.topContainer} pointerEvents="box-none">
-          {topToasts.map(toast => (
-            <ToastItem key={toast.id} item={toast} onDismiss={onDismiss} />
-          ))}
-        </View>
-      )}
-      {bottomToasts.length > 0 && (
+      {toasts.length > 0 && (
         <View style={styles.bottomContainer} pointerEvents="box-none">
-          {bottomToasts.map(toast => (
+          {toasts.map(toast => (
             <ToastItem key={toast.id} item={toast} onDismiss={onDismiss} />
           ))}
         </View>

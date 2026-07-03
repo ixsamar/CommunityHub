@@ -19,6 +19,13 @@ export const communityApi = shellHttpClient().injectEndpoints({
         }
         return {data: result.data!};
       },
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: 'Community' as const, id })),
+              { type: 'Community', id: 'LIST' },
+            ]
+          : [{ type: 'Community', id: 'LIST' }],
 
       serializeQueryArgs: ({endpointName, queryArgs}) => {
         const {search = '', sort = 'name', filter = 'all'} = queryArgs;
@@ -54,6 +61,7 @@ export const communityApi = shellHttpClient().injectEndpoints({
         }
         return {data: result.data!};
       },
+      providesTags: (result, error, id) => [{ type: 'Community', id }],
     }),
 
     joinCommunity: builder.mutation<Community, string>({
@@ -65,6 +73,10 @@ export const communityApi = shellHttpClient().injectEndpoints({
         }
         return {data: result.data!};
       },
+      invalidatesTags: (result, error, id) => [
+        { type: 'Community', id },
+        { type: 'Community', id: 'LIST' },
+      ],
       async onQueryStarted(id, {dispatch, queryFulfilled, getState}) {
         const state = getState() as RootState;
         const search = state.community?.searchQuery || '';
@@ -113,6 +125,10 @@ export const communityApi = shellHttpClient().injectEndpoints({
         }
         return {data: result.data!};
       },
+      invalidatesTags: (result, error, id) => [
+        { type: 'Community', id },
+        { type: 'Community', id: 'LIST' },
+      ],
       async onQueryStarted(id, {dispatch, queryFulfilled, getState}) {
         const state = getState() as RootState;
         const search = state.community?.searchQuery || '';
@@ -161,6 +177,7 @@ export const communityApi = shellHttpClient().injectEndpoints({
         }
         return {data: result.data!};
       },
+      invalidatesTags: [{ type: 'Community', id: 'LIST' }],
       async onQueryStarted(communityData, {dispatch, queryFulfilled, getState}) {
         const tempId = `community_${Date.now()}`;
         const optimisticCommunity: Community = {

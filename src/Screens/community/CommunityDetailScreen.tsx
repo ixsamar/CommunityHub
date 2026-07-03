@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   FlatList,
+  Alert,
 } from 'react-native';
 import {LazyImage} from '../../Components/common/LazyImage';
 import {useRoute, RouteProp, useNavigation} from '@react-navigation/native';
@@ -19,10 +20,14 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '../../Utils/themeIndex';
+import {PostCard} from '../../Components/posts/PostCard';
 import {CommunityStackParamList} from '../../Constance/globalTypes';
 import {useCommunityDetail} from './hooks/useCommunityDetail';
 import {RetryCard} from '../../Components/community/RetryCard';
 import {OfflineCard} from '../../Components/community/OfflineCard';
+import {useAuth} from '../auth/hooks/useAuth';
+import {useAppDispatch} from '../../Utils/hooks/useAppDispatch';
+import {clearCredentials} from '../../Store/slices/authSlice';
 
 type ScreenRouteProp = RouteProp<CommunityStackParamList, 'CommunityDetails'>;
 
@@ -31,6 +36,8 @@ export const CommunityDetailScreen = () => {
   const route = useRoute<ScreenRouteProp>();
   const navigation = useNavigation();
   const {communityId} = route.params;
+  const {isAuthenticated} = useAuth();
+  const dispatch = useAppDispatch();
 
   const {
     community,
@@ -56,6 +63,31 @@ export const CommunityDetailScreen = () => {
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const handleActionButtonPress = () => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please log in to join or leave communities.',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'Log In',
+            onPress: () => {
+              (navigation as any).navigate('Auth');
+            },
+          },
+        ],
+        {cancelable: true},
+      );
+      return;
+    }
+    if (community?.isJoined) {
+      handleLeave();
+    } else {
+      handleJoin();
+    }
   };
 
   if (isLoading && !isRefreshing) {
@@ -186,7 +218,7 @@ export const CommunityDetailScreen = () => {
                 borderWidth: community.isJoined ? 1 : 0,
               },
             ]}
-            onPress={community.isJoined ? handleLeave : handleJoin}
+            onPress={handleActionButtonPress}
             disabled={isActionLoading}
             activeOpacity={0.8}>
             {isActionLoading ? (
@@ -364,47 +396,10 @@ export const CommunityDetailScreen = () => {
               scrollEnabled={false}
               keyExtractor={item => item.id}
               renderItem={({item}) => (
-                <View
-                  style={[
-                    styles.postCard,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                  ]}>
-                  <View style={styles.postHeader}>
-                    <View style={[styles.authorIcon, {backgroundColor: colors.surfaceVariant}]}>
-                      <Text
-                        style={[typography.caption, {color: colors.primary, fontWeight: '700'}]}>
-                        {item.authorName.charAt(0)}
-                      </Text>
-                    </View>
-                    <View style={styles.authorDetails}>
-                      <Text style={[typography.bodySmall, {color: colors.text, fontWeight: '600'}]}>
-                        {item.authorName}
-                      </Text>
-                      <Text
-                        style={[typography.caption, {color: colors.textSecondary, fontSize: 10}]}>
-                        {formatJoinedDate(item.createdAt)}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text
-                    style={[
-                      typography.h3,
-                      {
-                        color: colors.text,
-                        fontSize: 15,
-                        marginTop: hp('1%'),
-                        marginBottom: hp('0.5%'),
-                      },
-                    ]}>
-                    {item.title}
-                  </Text>
-                  <Text style={[typography.bodySmall, {color: colors.text, lineHeight: 18}]}>
-                    {item.content}
-                  </Text>
-                </View>
+                <PostCard
+                  post={item}
+                  onPress={() => (navigation as any).navigate('PostDetails', {postId: item.id})}
+                />
               )}
               contentContainerStyle={styles.postsList}
             />

@@ -53,7 +53,25 @@ export const useCommunities = () => {
     limit: 10,
   });
 
-  const communities = data?.data || [];
+  const [communities, setCommunities] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (data?.data) {
+      if (listPage === 1) {
+        setCommunities(data.data);
+      } else {
+        setCommunities(prev => {
+          const unique = data.data.filter(
+            (newItem: any) => !prev.some((oldItem: any) => oldItem.id === newItem.id)
+          );
+          return [...prev, ...unique];
+        });
+      }
+    } else if (listPage === 1 && !isLoading && !isFetching) {
+      setCommunities([]);
+    }
+  }, [data, listPage, isLoading, isFetching]);
+
   const totalPages = data?.totalPages || 1;
   const hasMore = listPage < totalPages;
 

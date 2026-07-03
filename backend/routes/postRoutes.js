@@ -1,10 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { getPosts, createPost } = require('../controllers/postController');
-const { protect } = require('../middleware/auth');
+const { getPosts, createPost, getPostById, updatePost, deletePost } = require('../controllers/postController');
+const { protect, optionalProtect } = require('../middleware/auth');
 
 router.route('/')
-  .get(protect, getPosts)
+  .get(optionalProtect, getPosts)
   .post(protect, createPost);
+
+router.route('/:id')
+  .get(optionalProtect, getPostById)
+  .put(protect, updatePost)
+  .delete(protect, deletePost);
 
 module.exports = router;

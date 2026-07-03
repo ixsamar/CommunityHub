@@ -5,6 +5,7 @@ import {axiosInstance} from '../httpClient';
 
 export interface IAuthRepository {
   login(credentials: Record<string, string>): NetworkResult<AuthResponse>;
+  register(credentials: Record<string, string>): NetworkResult<AuthResponse>;
   logout(): Promise<void>;
   getCurrentUser(): Promise<User | null>;
   refreshToken(refreshToken: string): NetworkResult<AuthResponse>;
@@ -31,6 +32,32 @@ export class AuthRepository implements IAuthRepository {
       return {
         error: {
           code: 'AUTH_FAILED',
+          message: errorMessage,
+        },
+      };
+    }
+  }
+
+  public async register(credentials: Record<string, string>): NetworkResult<AuthResponse> {
+    try {
+      const response = await axiosInstance.post<AuthResponse & {refreshToken: string}>(
+        '/auth/register',
+        credentials,
+      );
+
+      secureStorage.setString('auth_token', response.data.token);
+      if (response.data.refreshToken) {
+        secureStorage.setString('auth_refresh_token', response.data.refreshToken);
+      }
+      secureStorage.setString('auth_user', JSON.stringify(response.data.user));
+
+      return {data: response.data};
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || error.message || 'Registration failed.';
+      return {
+        error: {
+          code: 'REGISTRATION_FAILED',
           message: errorMessage,
         },
       };

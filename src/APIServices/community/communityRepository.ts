@@ -252,6 +252,7 @@ export class CommunityRepository implements ICommunityRepository {
       }
 
       const response = await axiosInstance.post<Community>(`/communities/${id}/join`);
+      StorageRepository.clearCachePattern('communities_cache_');
       StorageRepository.set(cacheKey, response.data, 600);
       return {data: response.data};
     } catch (error: unknown) {
@@ -306,6 +307,7 @@ export class CommunityRepository implements ICommunityRepository {
       }
 
       const response = await axiosInstance.post<Community>(`/communities/${id}/leave`);
+      StorageRepository.clearCachePattern('communities_cache_');
       StorageRepository.set(cacheKey, response.data, 600);
       return {data: response.data};
     } catch (error: unknown) {
@@ -355,6 +357,7 @@ export class CommunityRepository implements ICommunityRepository {
       }
 
       const response = await axiosInstance.post<Community>('/communities', community);
+      StorageRepository.clearCachePattern('communities_cache_');
       StorageRepository.set(`community_detail_${response.data.id}`, response.data, 600);
       return {data: response.data};
     } catch (error: unknown) {

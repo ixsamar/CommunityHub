@@ -3,7 +3,7 @@ import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {z} from 'zod';
 import {DraftRepository, PostDraft} from '../../../APIServices/offline/DraftRepository';
-import {useCreatePostMutation} from '../../../APIServices/posts/postsApi';
+import {useCreatePostMutation, useGetPostByIdQuery, useUpdatePostMutation} from '../../../APIServices/posts/postsApi';
 import {useGetCommunitiesQuery} from '../../../APIServices/community/communityApi';
 import {useToast} from '../../../Components/common/ToastContext';
 import {useNavigation} from '@react-navigation/native';
@@ -21,12 +21,17 @@ export const postFormSchema = z.object({
 
 export type PostFormValues = z.infer<typeof postFormSchema>;
 
-export const useCreatePost = (initialCommunityId?: string) => {
+export const useCreatePost = (initialCommunityId?: string, editPostId?: string) => {
   const {showToast} = useToast();
   const navigation = useNavigation();
   const isSubmittingRef = useRef(false);
   const [createPostTrigger, {isLoading: isSubmittingMutation}] = useCreatePostMutation();
-  const isSubmitting = isSubmittingMutation;
+  const [updatePostTrigger, {isLoading: isUpdatingMutation}] = useUpdatePostMutation();
+  const isSubmitting = isSubmittingMutation || isUpdatingMutation;
+
+  const {data: editPostData, isLoading: isFetchingEditPost} = useGetPostByIdQuery(editPostId || '', {
+    skip: !editPostId,
+  });
 
   const {data: communitiesData} = useGetCommunitiesQuery({
     page: 1,
@@ -36,7 +41,7 @@ export const useCreatePost = (initialCommunityId?: string) => {
 
   const draftKey = initialCommunityId || 'general';
 
-  const savedDraft = DraftRepository.getDraft(draftKey);
+  const savedDraft = editPostId ? null : DraftRepository.getDraft(draftKey);
 
   const methods = useForm<PostFormValues>({
     resolver: zodResolver(postFormSchema),
@@ -48,10 +53,27 @@ export const useCreatePost = (initialCommunityId?: string) => {
     },
   });
 
-  const {watch, reset} = methods;
+  const {watch, reset, register} = methods;
   const currentValues = watch();
 
   useEffect(() => {
+    register('communityId');
+  }, [register]);
+
+  useEffect(() => {
+    if (editPostId && editPostData) {
+      reset({
+        title: editPostData.title,
+        content: editPostData.content,
+        communityId: editPostData.communityId,
+        images: editPostData.images || [],
+      });
+    }
+  }, [editPostId, editPostData, reset]);
+
+  useEffect(() => {
+    if (editPostId) return;
+
     const hasValue =
       currentValues.title ||
       currentValues.content ||
@@ -71,6 +93,7 @@ export const useCreatePost = (initialCommunityId?: string) => {
     currentValues.communityId,
     currentValues.images,
     draftKey,
+    editPostId,
   ]);
 
   const onSubmit = useCallback(
@@ -81,14 +104,20 @@ export const useCreatePost = (initialCommunityId?: string) => {
       }
       isSubmittingRef.current = true;
       try {
-        Logger.info('Submitting post creation...', 'useCreatePost');
-        const clientPostId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        await createPostTrigger({...values, clientPostId}).unwrap();
+        if (editPostId) {
+          Logger.info('Updating post...', 'useCreatePost');
+          await updatePostTrigger({id: editPostId, post: values}).unwrap();
+          showToast('Post updated successfully!', 'success');
+        } else {
+          Logger.info('Submitting post creation...', 'useCreatePost');
+          const clientPostId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          await createPostTrigger({...values, clientPostId}).unwrap();
 
-        DraftRepository.clearDraft(draftKey);
-        reset({title: '', content: '', communityId: initialCommunityId || '', images: []});
+          DraftRepository.clearDraft(draftKey);
+          reset({title: '', content: '', communityId: initialCommunityId || '', images: []});
 
-        showToast('Post created successfully!', 'success');
+          showToast('Post created successfully!', 'success');
+        }
         navigation.goBack();
       } catch (err: unknown) {
         const error = err as {
@@ -97,32 +126,33 @@ export const useCreatePost = (initialCommunityId?: string) => {
           data?: {message?: string};
         };
         const errMsg = error?.message || error?.error?.message || '';
-        if (errMsg.includes('offline') || errMsg.includes('queued') || errMsg.includes('Network')) {
+        if (!editPostId && (errMsg.includes('offline') || errMsg.includes('queued') || errMsg.includes('Network'))) {
           DraftRepository.clearDraft(draftKey);
           reset({title: '', content: '', communityId: initialCommunityId || '', images: []});
           showToast('Offline: Post queued for synchronization.', 'success');
           navigation.goBack();
         } else {
-          showToast(error?.data?.message || 'Failed to create post. Please try again.', 'error');
+          showToast(error?.data?.message || `Failed to ${editPostId ? 'update' : 'create'} post. Please try again.`, 'error');
         }
       } finally {
         isSubmittingRef.current = false;
       }
     },
-    [createPostTrigger, draftKey, reset, initialCommunityId, showToast, navigation],
+    [createPostTrigger, updatePostTrigger, draftKey, reset, initialCommunityId, editPostId, showToast, navigation],
   );
 
   const discardDraft = useCallback(() => {
+    if (editPostId) return;
     DraftRepository.clearDraft(draftKey);
     reset({title: '', content: '', communityId: initialCommunityId || '', images: []});
     showToast('Draft discarded.', 'info');
-  }, [draftKey, reset, initialCommunityId, showToast]);
+  }, [editPostId, draftKey, reset, initialCommunityId, showToast]);
 
   return {
     methods,
     onSubmit,
     discardDraft,
-    isSubmitting,
+    isSubmitting: isSubmitting || isFetchingEditPost,
     communities,
     hasSavedDraft: !!savedDraft,
   };

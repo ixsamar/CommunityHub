@@ -37,9 +37,10 @@ export const CreatePostScreen = () => {
   const navigation = useNavigation();
   const {showToast} = useToast();
   const initialCommunityId = route.params?.communityId;
+  const editPostId = route.params?.editPostId;
 
   const {methods, onSubmit, discardDraft, isSubmitting, communities, hasSavedDraft} =
-    useCreatePost(initialCommunityId);
+    useCreatePost(initialCommunityId, editPostId);
 
   const {
     control,
@@ -108,7 +109,7 @@ export const CreatePostScreen = () => {
           activeOpacity={0.7}>
           <Icon name="close" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[typography.h3, {color: colors.text}]}>Create Post</Text>
+        <Text style={[typography.h3, {color: colors.text}]}>{editPostId ? 'Edit Post' : 'Create Post'}</Text>
         <TouchableOpacity
           onPress={handleSubmit(onSubmit)}
           disabled={isSubmitting}
@@ -118,7 +119,7 @@ export const CreatePostScreen = () => {
           ]}
           activeOpacity={0.8}>
           <Text style={[typography.bodySmall, {color: '#ffffff', fontWeight: '700'}]}>
-            {isSubmitting ? 'Posting...' : 'Post'}
+            {editPostId ? (isSubmitting ? 'Saving...' : 'Save') : (isSubmitting ? 'Posting...' : 'Post')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -344,27 +345,27 @@ export const CreatePostScreen = () => {
                       styles.addImageCard,
                       {backgroundColor: colors.surface, borderColor: colors.border},
                     ]}
-                    onPress={() => {
-                      launchImageLibrary(
-                        {
+                    onPress={async () => {
+                      try {
+                        const response = await launchImageLibrary({
                           mediaType: 'photo',
                           selectionLimit: 0,
-                        },
-                        response => {
-                          if (response.didCancel) return;
-                          if (response.errorMessage) {
-                            showToast(response.errorMessage, 'error');
-                            return;
-                          }
-                          if (response.assets) {
-                            const newUris = response.assets
-                              .map(asset => asset.uri)
-                              .filter((uri): uri is string => !!uri);
-                            const existing = watch('images') || [];
-                            setValue('images', [...existing, ...newUris], {shouldValidate: true});
-                          }
-                        },
-                      );
+                        });
+                        if (response.didCancel) return;
+                        if (response.errorMessage) {
+                          showToast(response.errorMessage, 'error');
+                          return;
+                        }
+                        if (response.assets) {
+                          const newUris = response.assets
+                            .map(asset => asset.uri)
+                            .filter((uri): uri is string => !!uri);
+                          const existing = watch('images') || [];
+                          setValue('images', [...existing, ...newUris], {shouldValidate: true});
+                        }
+                      } catch (err: any) {
+                        showToast(err.message || 'Failed to select images', 'error');
+                      }
                     }}
                     activeOpacity={0.8}
                     accessibilityRole="button"

@@ -18,17 +18,25 @@ const protect = async (req, res, next) => {
     }
   }
 
-  try {
-    const defaultUser = await User.findOne();
-    if (defaultUser) {
-      req.user = { id: defaultUser._id.toString(), email: defaultUser.email };
-      return next();
-    }
-  } catch (err) {
-    // Skip
-  }
-
   return res.status(401).json({ message: 'Not authorized, no token.' });
 };
 
-module.exports = { protect };
+const optionalProtect = async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+    } catch (error) {
+      // Ignore token validation failure in optional protect
+    }
+  }
+  next();
+};
+
+module.exports = { protect, optionalProtect };

@@ -20,6 +20,7 @@ export const useAuth = () => {
     isBiometricsEnabled,
 
     login: (credentials: Record<string, string>) => authService.login(credentials),
+    register: (credentials: Record<string, string>) => authService.register(credentials),
     logout: () => authService.logout(),
     biometricLogin: () => authService.biometricLogin(),
     toggleBiometricEnrollment: (enroll: boolean, credentials?: {email: string; password: string}) =>

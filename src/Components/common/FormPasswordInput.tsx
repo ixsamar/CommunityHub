@@ -53,7 +53,7 @@ export const FormPasswordInput: React.FC<Props> = ({
             styles.input,
             {
               color: colors.text,
-              padding: hp('1.5%'),
+              paddingHorizontal: wp('4%'),
             },
             style,
           ]}
@@ -99,14 +99,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderRadius: 8,
+    height: hp('5.8%'),
   },
   input: {
     flex: 1,
     fontSize: 16,
+    height: '100%',
   },
   toggleButton: {
     paddingHorizontal: wp('4%'),
     justifyContent: 'center',
-    height: '100%',
+    alignSelf: 'stretch',
   },
 });

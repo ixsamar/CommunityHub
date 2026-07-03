@@ -12,16 +12,18 @@ import {clearCredentials} from '../../Store/slices/authSlice';
 import {setThemeMode, ThemeMode} from '../../Store/slices/themeSlice';
 import {secureStorage} from '../../Utils/mmkv';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {useNavigation} from '@react-navigation/native';
 
 export const ProfileScreen = () => {
   const {colors, typography, borderRadius} = useTheme();
   const dispatch = useAppDispatch();
+  const navigation = useNavigation();
 
   const user = useAppSelector(state => state.auth.user);
   const currentThemeMode = useAppSelector(state => state.theme?.mode ?? 'system');
 
-  const displayName = user?.name || 'Samarasimha Reddy';
-  const displayEmail = user?.email || 'samarasimha.reddy@communityhub.com';
+  const displayName = user ? user.name : 'Guest User';
+  const displayEmail = user ? user.email : 'Please sign in to access your profile';
 
   const getInitials = (name: string) => {
     return name
@@ -32,7 +34,7 @@ export const ProfileScreen = () => {
       .substring(0, 2);
   };
 
-  const initials = getInitials(displayName);
+  const initials = user ? getInitials(displayName) : '?';
 
   const handleLogout = () => {
     secureStorage.delete('auth_token');
@@ -43,7 +45,7 @@ export const ProfileScreen = () => {
     <SafeAreaView
       style={[styles.container, {backgroundColor: colors.background}]}
       edges={['top', 'left', 'right']}>
-      {}
+      {/* Header */}
       <View style={[styles.headerRow, {borderBottomColor: colors.border}]}>
         <Text style={[typography.h3, {color: colors.text, fontWeight: '800'}]}>Profile</Text>
         <TouchableOpacity
@@ -56,36 +58,64 @@ export const ProfileScreen = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {}
-        <View
-          style={[
-            styles.profileCard,
-            {
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-              borderRadius: borderRadius.lg,
-            },
-          ]}>
-          <View style={[styles.largeAvatar, {backgroundColor: colors.primary + '20'}]}>
-            <Text style={[styles.largeAvatarText, {color: colors.primary}]}>{initials}</Text>
+        {/* Profile Card */}
+        {user ? (
+          <View
+            style={[
+              styles.profileCard,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                borderRadius: borderRadius.lg,
+              },
+            ]}>
+            <View style={[styles.largeAvatar, {backgroundColor: colors.primary + '20'}]}>
+              <Text style={[styles.largeAvatarText, {color: colors.primary}]}>{initials}</Text>
+            </View>
+            <View style={styles.profileMeta}>
+              <Text style={[typography.h3, {color: colors.text, fontWeight: '700'}]}>
+                {displayName}
+              </Text>
+              <Text
+                style={[typography.bodySmall, {color: colors.textSecondary, marginTop: hp('0.3%')}]}>
+                {displayEmail}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.moreButton}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="More actions">
+              <Icon name="ellipsis-vertical" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
           </View>
-          <View style={styles.profileMeta}>
-            <Text style={[typography.h3, {color: colors.text, fontWeight: '700'}]}>
-              {displayName}
-            </Text>
-            <Text
-              style={[typography.bodySmall, {color: colors.textSecondary, marginTop: hp('0.3%')}]}>
-              {displayEmail}
-            </Text>
-          </View>
+        ) : (
           <TouchableOpacity
-            style={styles.moreButton}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="More actions">
-            <Icon name="ellipsis-vertical" size={20} color={colors.textSecondary} />
+            style={[
+              styles.profileCard,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                borderRadius: borderRadius.lg,
+              },
+            ]}
+            onPress={() => (navigation as any).navigate('Auth')}
+            activeOpacity={0.8}>
+            <View style={[styles.largeAvatar, {backgroundColor: colors.primary + '10'}]}>
+              <Icon name="log-in-outline" size={24} color={colors.primary} />
+            </View>
+            <View style={styles.profileMeta}>
+              <Text style={[typography.h3, {color: colors.text, fontWeight: '700'}]}>
+                Sign In / Register
+              </Text>
+              <Text
+                style={[typography.bodySmall, {color: colors.textSecondary, marginTop: hp('0.3%')}]}>
+                Please sign in to access your profile
+              </Text>
+            </View>
+            <Icon name="chevron-forward" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
-        </View>
+        )}
 
         {}
         <View
@@ -268,26 +298,27 @@ export const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {}
-        <TouchableOpacity
-          style={[
-            styles.logoutBtn,
-            {backgroundColor: colors.error + '10', borderColor: colors.error},
-          ]}
-          onPress={handleLogout}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Log Out">
-          <Icon
-            name="log-out-outline"
-            size={20}
-            color={colors.warningLight}
-            style={styles.menuIcon}
-          />
-          <Text style={[typography.bodyMedium, {color: colors.warningLight, fontWeight: '700'}]}>
-            Log Out
-          </Text>
-        </TouchableOpacity>
+        {user && (
+          <TouchableOpacity
+            style={[
+              styles.logoutBtn,
+              {backgroundColor: colors.error + '10', borderColor: colors.error},
+            ]}
+            onPress={handleLogout}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Log Out">
+            <Icon
+              name="log-out-outline"
+              size={20}
+              color={colors.warningLight}
+              style={styles.menuIcon}
+            />
+            <Text style={[typography.bodyMedium, {color: colors.warningLight, fontWeight: '700'}]}>
+              Log Out
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {}
         <View style={styles.footer}>

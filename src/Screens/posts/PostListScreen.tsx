@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Alert} from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -13,11 +13,15 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTheme} from '../../Utils/themeIndex';
 import {PostsStackParamList} from '../../Constance/globalTypes';
 import {usePosts} from './hooks/usePosts';
+import {useAuth} from '../auth/hooks/useAuth';
+import {useAppDispatch} from '../../Utils/hooks/useAppDispatch';
+import {clearCredentials} from '../../Store/slices/authSlice';
 import {PostCard} from '../../Components/posts/PostCard';
 import {OfflineCard} from '../../Components/community/OfflineCard';
 import {RetryCard} from '../../Components/community/RetryCard';
 import {EmptyState} from '../../Components/common/EmptyState';
 import {Skeleton} from '../../Components/common/Skeleton';
+import {PaginationLoader} from '../../Components/community/PaginationLoader';
 import {Post} from '../../Constance/globalTypes';
 import {PerformanceMonitor} from '../../Utils/performance';
 
@@ -27,7 +31,19 @@ export const PostListScreen = () => {
   const {colors, typography, spacing} = useTheme();
   const navigation = useNavigation<NavigationProp>();
 
-  const {posts, isLoading, isRefreshing, isOffline, error, handleRefresh} = usePosts();
+  const {
+    posts,
+    isLoading,
+    isFetchingMore,
+    isRefreshing,
+    isOffline,
+    error,
+    hasMore,
+    handleRefresh,
+    handleLoadMore,
+  } = usePosts();
+  const {isAuthenticated} = useAuth();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const trace = PerformanceMonitor.startTrace('PostListScreenMount');
@@ -49,10 +65,32 @@ export const PostListScreen = () => {
   }, [isRefreshing]);
 
   const handleCreatePostPress = useCallback(() => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please log in to create a new post.',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'Log In',
+            onPress: () => {
+              (navigation as any).navigate('Auth');
+            },
+          },
+        ],
+        {cancelable: true},
+      );
+      return;
+    }
     navigation.navigate('CreatePost');
-  }, [navigation]);
+  }, [navigation, isAuthenticated, dispatch]);
 
-  const renderPostItem = useCallback(({item}: {item: Post}) => <PostCard post={item} />, []);
+  const renderPostItem = useCallback(({item}: {item: Post}) => (
+    <PostCard
+      post={item}
+      onPress={() => (navigation as any).navigate('PostDetails', {postId: item.id})}
+    />
+  ), [navigation]);
 
   const keyExtractor = useCallback((item: Post) => item.id, []);
 
@@ -142,13 +180,18 @@ export const PostListScreen = () => {
             estimatedItemSize={hp('14%')}
             onRefresh={handleRefresh}
             refreshing={isRefreshing}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={<PaginationLoader isLoading={isFetchingMore} hasMore={hasMore} />}
             ListEmptyComponent={
-              <EmptyState
-                title="No Posts Available"
-                description="Be the first to share your thoughts by posting a new topic in a community."
-                actionLabel="Create First Post"
-                onAction={handleCreatePostPress}
-              />
+              <View style={{height: hp('60%'), justifyContent: 'center', alignItems: 'center'}}>
+                <EmptyState
+                  title="No Posts Available"
+                  description="Be the first to share your thoughts by posting a new topic in a community."
+                  actionLabel="Create First Post"
+                  onAction={handleCreatePostPress}
+                />
+              </View>
             }
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}

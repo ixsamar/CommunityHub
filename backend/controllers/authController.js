@@ -21,7 +21,7 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials.' });
+      return res.status(404).json({ message: 'User not found. Please register first.' });
     }
 
     const isMatch = await user.comparePassword(password);
@@ -78,5 +78,39 @@ exports.refresh = async (req, res) => {
     });
   } catch (error) {
     res.status(401).json({ message: 'Invalid or expired refresh token.' });
+  }
+};
+
+exports.register = async (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  try {
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists with this email.' });
+    }
+
+    const user = await User.create({ name, email, password });
+
+    const { token, refreshToken } = generateTokens(user);
+
+    res.status(201).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        bio: user.bio,
+        avatarUrl: user.avatarUrl,
+        joinedDate: user.joinedDate,
+      },
+      token,
+      refreshToken,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error.', error: error.message });
   }
 };
