@@ -17,7 +17,7 @@ export const GlassBackground: React.FC<Props> = ({children, style}) => {
 
   return (
     <View style={[styles.container, {backgroundColor: colors.background}, style]}>
-      {/* Mesh Aurora Blobs */}
+      {}
       <View
         style={[
           styles.blob,

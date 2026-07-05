@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any, react/display-name */
+
 jest.mock('react-native-mmkv', () => {
   const store: Record<string, string> = {};
   return {
@@ -36,7 +36,9 @@ jest.mock('react-native-reanimated', () => {
 jest.mock('react-native-vector-icons/Ionicons', () => {
   const React = require('react');
   const {Text} = require('react-native');
-  return (props: any) => React.createElement(Text, props, props.name);
+  const MockIcon = (props: any) => React.createElement(Text, props, props.name);
+  MockIcon.displayName = 'Icon';
+  return MockIcon;
 });
 
 jest.mock('@shopify/flash-list', () => {

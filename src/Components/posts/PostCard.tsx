@@ -3,11 +3,11 @@ import {
   StyleSheet,
   Text,
   View,
-  ActivityIndicator,
   TouchableOpacity,
   ScrollView,
   Alert,
 } from 'react-native';
+import {Skeleton} from '../common/Skeleton';
 import {LazyImage} from '../common/LazyImage';
 import {
   widthPercentageToDP as wp,
@@ -201,7 +201,7 @@ export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = 
               </TouchableOpacity>
             ) : (
               <>
-                <ActivityIndicator size="small" color={colors.warning} style={styles.spinner} />
+                <Skeleton width={12} height={12} borderRadius={6} style={{marginRight: 4}} />
                 <Text
                   maxFontSizeMultiplier={1.2}
                   style={[

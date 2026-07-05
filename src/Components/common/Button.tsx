@@ -1,12 +1,12 @@
 import React, {useCallback} from 'react';
 import {
   Text,
-  ActivityIndicator,
   ViewStyle,
   TextStyle,
   TouchableOpacityProps,
   GestureResponderEvent,
 } from 'react-native';
+import {Skeleton} from './Skeleton';
 import Animated, {useSharedValue, useAnimatedStyle, withSpring} from 'react-native-reanimated';
 import {
   widthPercentageToDP as wp,
@@ -134,7 +134,7 @@ export const Button: React.FC<ButtonProps> = ({
         onResponderTerminate={handlePressOut}
         {...props}>
         {loading ? (
-          <ActivityIndicator size="small" color={spinnerColor} accessibilityLabel="Loading" />
+          <Skeleton width={50} height={12} borderRadius={3} style={{backgroundColor: spinnerColor + '40'}} />
         ) : (
           <Text
             style={[typography.button, {color: labelColor(), letterSpacing: 0.2}, textStyle]}

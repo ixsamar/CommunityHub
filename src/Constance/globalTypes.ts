@@ -93,9 +93,14 @@ export type ProfileStackParamList = {
   Profile: undefined;
 };
 
+export type NotificationStackParamList = {
+  NotificationList: undefined;
+};
+
 export type HomeTabParamList = {
   CommunityTab: NavigatorScreenParams<CommunityStackParamList>;
   PostsTab: NavigatorScreenParams<PostsStackParamList>;
+  NotificationTab: NavigatorScreenParams<NotificationStackParamList>;
   ProfileTab: NavigatorScreenParams<ProfileStackParamList>;
 };
 

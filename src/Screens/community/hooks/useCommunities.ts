@@ -51,6 +51,8 @@ export const useCommunities = () => {
     filter: filterType,
     page: listPage,
     limit: 10,
+  }, {
+    refetchOnMountOrArgChange: true,
   });
 
   const [communities, setCommunities] = useState<any[]>([]);

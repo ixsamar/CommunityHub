@@ -1,5 +1,5 @@
-import React from 'react';
-import {StyleSheet, Text, View, TouchableOpacity, ScrollView} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet, Text, View, TouchableOpacity, ScrollView, Image} from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -15,6 +15,8 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation, CompositeNavigationProp} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {ProfileStackParamList, RootStackParamList} from '../../Constance/globalTypes';
+import {Skeleton} from '../../Components/common/Skeleton';
+import {GlassBackground} from '../../Components/common/GlassBackground';
 
 type NavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<ProfileStackParamList, 'Profile'>,
@@ -22,50 +24,83 @@ type NavigationProp = CompositeNavigationProp<
 >;
 
 export const ProfileScreen = () => {
-  const {colors, typography, borderRadius} = useTheme();
+  const theme = useTheme();
+  const {colors, typography, borderRadius, dark} = theme;
   const dispatch = useAppDispatch();
   const navigation = useNavigation<NavigationProp>();
 
   const user = useAppSelector(state => state.auth.user);
   const currentThemeMode = useAppSelector(state => state.theme?.mode ?? 'system');
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 700);
+    return () => clearTimeout(timer);
+  }, []);
+
   const displayName = user ? user.name : 'Guest User';
   const displayEmail = user ? user.email : 'Please sign in to access your profile';
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
 
-  const initials = user ? getInitials(displayName) : '?';
 
   const handleLogout = () => {
     secureStorage.delete('auth_token');
     dispatch(clearCredentials());
   };
 
+  if (isLoading) {
+    return (
+      <GlassBackground>
+        <SafeAreaView style={[styles.container, {backgroundColor: 'transparent'}]} edges={['top', 'left', 'right']}>
+          {}
+          <View style={[styles.headerRow, {borderBottomColor: colors.border}]}>
+            <Text style={[typography.h3, {color: colors.text, fontWeight: '800'}]}>Profile</Text>
+          </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            {}
+            <View
+              style={[
+                styles.skeletonProfileCard,
+                {
+                  backgroundColor: dark ? 'rgba(30, 41, 59, 0.45)' : 'rgba(255, 255, 255, 0.55)',
+                  borderColor: colors.border,
+                  borderRadius: borderRadius.lg,
+                },
+              ]}>
+              <Skeleton width={wp('16%')} height={wp('16%')} borderRadius={wp('8%')} />
+              <View style={{marginLeft: wp('4%'), flex: 1}}>
+                <Skeleton width="60%" height={16} borderRadius={3} style={{marginBottom: 8}} />
+                <Skeleton width="40%" height={12} borderRadius={3} />
+              </View>
+            </View>
+
+            {}
+            {[1, 2, 3, 4].map(key => (
+              <View key={key} style={[styles.skeletonItem, {borderColor: colors.border}]}>
+                <Skeleton width="80%" height={14} borderRadius={3} />
+              </View>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </GlassBackground>
+    );
+  }
+
   return (
-    <SafeAreaView
-      style={[styles.container, {backgroundColor: colors.background}]}
-      edges={['top', 'left', 'right']}>
-      {/* Header */}
+    <GlassBackground>
+      <SafeAreaView
+        style={[styles.container, {backgroundColor: 'transparent'}]}
+        edges={['top', 'left', 'right']}>
+      {}
       <View style={[styles.headerRow, {borderBottomColor: colors.border}]}>
         <Text style={[typography.h3, {color: colors.text, fontWeight: '800'}]}>Profile</Text>
-        <TouchableOpacity
-          style={styles.iconButton}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Notifications">
-          <Icon name="notifications-outline" size={22} color={colors.text} />
-        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Profile Card */}
+        {}
         {user ? (
           <View
             style={[
@@ -76,9 +111,10 @@ export const ProfileScreen = () => {
                 borderRadius: borderRadius.lg,
               },
             ]}>
-            <View style={[styles.largeAvatar, {backgroundColor: colors.primary + '20'}]}>
-              <Text style={[styles.largeAvatarText, {color: colors.primary}]}>{initials}</Text>
-            </View>
+            <Image
+              source={{uri: 'https://imgs.search.brave.com/3VCGXoShR6x43wbssYRqbucgx9gXPtweefhtFvwHUpU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/aWNvbnM4LmNvbS9u/b2xhbi8xMjAwL2dl/bmRlci1uZXV0cmFs/LXVzZXIuanBn'}}
+              style={styles.largeAvatar}
+            />
             <View style={styles.profileMeta}>
               <Text style={[typography.h3, {color: colors.text, fontWeight: '700'}]}>
                 {displayName}
@@ -337,7 +373,8 @@ export const ProfileScreen = () => {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </GlassBackground>
   );
 };
 
@@ -460,5 +497,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: hp('2%'),
+  },
+  skeletonProfileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: wp('4%'),
+    marginVertical: hp('1%'),
+    borderWidth: 1.5,
+  },
+  skeletonItem: {
+    height: hp('6.5%'),
+    borderBottomWidth: 1,
+    justifyContent: 'center',
+    paddingHorizontal: wp('4%'),
   },
 });

@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, Text, View, Modal, TouchableOpacity, Pressable} from 'react-native';
 import {
   widthPercentageToDP as wp,
@@ -29,8 +29,13 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
     const backdropOpacity = useSharedValue(0);
     const sheetTranslateY = useSharedValue(hp('50%'));
 
+    const [localSort, setLocalSort] = useState(sortBy);
+    const [localFilter, setLocalFilter] = useState(filterType);
+
     useEffect(() => {
       if (visible) {
+        setLocalSort(sortBy);
+        setLocalFilter(filterType);
         backdropOpacity.value = withTiming(0.4, {duration: 200});
         sheetTranslateY.value = withSpring(0, {
           damping: 18,
@@ -40,7 +45,7 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
         backdropOpacity.value = withTiming(0, {duration: 200});
         sheetTranslateY.value = withTiming(hp('50%'), {duration: 200});
       }
-    }, [visible, backdropOpacity, sheetTranslateY]);
+    }, [visible, sortBy, filterType, backdropOpacity, sheetTranslateY]);
 
     const handleClose = () => {
       backdropOpacity.value = withTiming(0, {duration: 150});
@@ -48,6 +53,12 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
       setTimeout(() => {
         onClose();
       }, 160);
+    };
+
+    const handleApply = () => {
+      onSortChange(localSort);
+      onFilterChange(localFilter);
+      handleClose();
     };
 
     const animatedBackdropStyle = useAnimatedStyle(() => ({
@@ -73,13 +84,11 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
     return (
       <Modal transparent visible={visible} animationType="none" onRequestClose={handleClose}>
         <View style={styles.overlay}>
-          {}
           <Animated.View
             style={[styles.backdrop, {backgroundColor: '#000000'}, animatedBackdropStyle]}>
             <Pressable style={styles.flexOne} onPress={handleClose} />
           </Animated.View>
 
-          {}
           <Animated.View
             style={[
               styles.sheet,
@@ -90,10 +99,8 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
               },
               animatedSheetStyle,
             ]}>
-            {}
             <View style={[styles.dragHandle, {backgroundColor: colors.border}]} />
 
-            {}
             <View style={styles.headerRow}>
               <Text style={[typography.h3, {color: colors.text}]}>Sort & Filter</Text>
               <TouchableOpacity onPress={handleClose} activeOpacity={0.7} style={styles.closeBtn}>
@@ -101,7 +108,6 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
               </TouchableOpacity>
             </View>
 
-            {}
             <View style={styles.section}>
               <Text
                 style={[
@@ -112,7 +118,7 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
               </Text>
               <View style={styles.optionsList}>
                 {filterOptions.map(opt => {
-                  const active = filterType === opt.value;
+                  const active = localFilter === opt.value;
                   return (
                     <TouchableOpacity
                       key={opt.value}
@@ -125,7 +131,7 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
                           paddingHorizontal: wp('3%'),
                         },
                       ]}
-                      onPress={() => onFilterChange(opt.value)}
+                      onPress={() => setLocalFilter(opt.value)}
                       activeOpacity={0.8}>
                       <View style={styles.optionInfo}>
                         <Icon
@@ -152,10 +158,8 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
               </View>
             </View>
 
-            {}
             <View style={[styles.divider, {backgroundColor: colors.border}]} />
 
-            {}
             <View style={styles.section}>
               <Text
                 style={[
@@ -166,7 +170,7 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
               </Text>
               <View style={styles.optionsList}>
                 {sortOptions.map(opt => {
-                  const active = sortBy === opt.value;
+                  const active = localSort === opt.value;
                   return (
                     <TouchableOpacity
                       key={opt.value}
@@ -179,7 +183,7 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
                           paddingHorizontal: wp('3%'),
                         },
                       ]}
-                      onPress={() => onSortChange(opt.value)}
+                      onPress={() => setLocalSort(opt.value)}
                       activeOpacity={0.8}>
                       <View style={styles.optionInfo}>
                         <Icon
@@ -206,10 +210,9 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
               </View>
             </View>
 
-            {}
             <TouchableOpacity
               style={[styles.applyButton, {backgroundColor: colors.primary}]}
-              onPress={handleClose}
+              onPress={handleApply}
               activeOpacity={0.9}>
               <Text style={[typography.bodyMedium, {color: '#ffffff', fontWeight: '700'}]}>
                 Apply Filters

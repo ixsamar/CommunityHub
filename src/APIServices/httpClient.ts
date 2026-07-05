@@ -1,7 +1,7 @@
-import axios, {InternalAxiosRequestConfig, AxiosResponse, AxiosAdapter} from 'axios';
-import {secureStorage, storage} from '../Utils/mmkv';
-import {ENV} from '../Constance/commonURLs';
-import type {baseApi} from './baseApi';
+import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosAdapter } from 'axios';
+import { secureStorage, storage } from '../Utils/mmkv';
+import { ENV } from '../Constance/commonURLs';
+import type { baseApi } from './baseApi';
 
 const customAdapter: AxiosAdapter = async config => {
   const url = config.url || '';
@@ -27,7 +27,7 @@ const customAdapter: AxiosAdapter = async config => {
       };
     } else {
       return {
-        data: {message: 'Invalid credentials. Password must be at least 6 characters.'},
+        data: { message: 'Invalid credentials. Password must be at least 6 characters.' },
         status: 400,
         statusText: 'Bad Request',
         headers: {},
@@ -56,7 +56,7 @@ const customAdapter: AxiosAdapter = async config => {
       };
     } else {
       return {
-        data: {message: 'Session expired. Invalid refresh token.'},
+        data: { message: 'Session expired. Invalid refresh token.' },
         status: 401,
         statusText: 'Unauthorized',
         headers: {},
@@ -167,7 +167,7 @@ const customAdapter: AxiosAdapter = async config => {
         isPrivate: false,
         createdAt: '2025-11-15T09:00:00Z',
         image:
-          'https://images.unsplash.com/photo-1677442136019-21780efad99a?w=500&auto=format&fit=crop&q=60',
+          'https://imgs.search.brave.com/jnYC_1D32y_2-7UCstJawMOy6vidVC25ArSJ_HFZffk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cHNhLmdvdi5pbi9D/TVMvd2ViL3NpdGVz/L2RlZmF1bHQvZmls/ZXMvMjAyNi0wNi9h/aS1taXNzaW9uLWlu/aXRpYXRpdmUtYmFu/bmVyLWltZy5wbmc',
       },
       {
         id: 'c9',
@@ -291,11 +291,11 @@ const customAdapter: AxiosAdapter = async config => {
   const generateMockPosts = (): any[] => {
     const posts: any[] = [];
     const authors = [
-      {name: 'Alex Johnson', id: 'usr_2'},
-      {name: 'Sarah Connor', id: 'usr_3'},
-      {name: 'Devon Miller', id: 'usr_4'},
-      {name: 'Emily Watson', id: 'usr_5'},
-      {name: 'James Carter', id: 'usr_6'},
+      { name: 'Alex Johnson', id: 'usr_2' },
+      { name: 'Sarah Connor', id: 'usr_3' },
+      { name: 'Devon Miller', id: 'usr_4' },
+      { name: 'Emily Watson', id: 'usr_5' },
+      { name: 'James Carter', id: 'usr_6' },
     ];
 
     const contentTemplates = [
@@ -346,14 +346,44 @@ const customAdapter: AxiosAdapter = async config => {
 
   const getStoredCommunities = (): any[] => {
     const data = storage.getString('mock_communities');
+    const initial = generateMockCommunities();
+    const unsplashImages = [
+      'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=60',
+      'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&auto=format&fit=crop&q=60',
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop&q=60',
+      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&auto=format&fit=crop&q=60',
+      'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&auto=format&fit=crop&q=60',
+      'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&auto=format&fit=crop&q=60',
+    ];
     if (data) {
       try {
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        let modified = false;
+        const fixed = parsed.map((c: any, index: number) => {
+          const baseItem = initial.find((x: any) => x.id === c.id);
+          if (baseItem && baseItem.image !== c.image) {
+            modified = true;
+            return {
+              ...c,
+              image: baseItem.image,
+            };
+          }
+          if (!c.image) {
+            modified = true;
+            return {
+              ...c,
+              image: unsplashImages[index % unsplashImages.length],
+            };
+          }
+          return c;
+        });
+        if (modified) {
+          storage.set('mock_communities', JSON.stringify(fixed));
+        }
+        return fixed;
       } catch {
-        // use initial
       }
     }
-    const initial = generateMockCommunities();
     storage.set('mock_communities', JSON.stringify(initial));
     return initial;
   };
@@ -368,7 +398,7 @@ const customAdapter: AxiosAdapter = async config => {
       try {
         return JSON.parse(data);
       } catch {
-        // use initial
+
       }
     }
     const initial = generateMockPosts();
@@ -424,7 +454,7 @@ const customAdapter: AxiosAdapter = async config => {
         }
       }
       return {
-        data: {message: 'Community not found for join'},
+        data: { message: 'Community not found for join' },
         status: 404,
         statusText: 'Not Found',
         headers: {},
@@ -456,7 +486,7 @@ const customAdapter: AxiosAdapter = async config => {
         }
       }
       return {
-        data: {message: 'Community not found for leave'},
+        data: { message: 'Community not found for leave' },
         status: 404,
         statusText: 'Not Found',
         headers: {},
@@ -488,7 +518,7 @@ const customAdapter: AxiosAdapter = async config => {
         };
       }
       return {
-        data: {message: 'Community not found'},
+        data: { message: 'Community not found' },
         status: 404,
         statusText: 'Not Found',
         headers: {},
@@ -499,6 +529,14 @@ const customAdapter: AxiosAdapter = async config => {
     if (config.method?.toUpperCase() === 'POST') {
       const body = JSON.parse(config.data || '{}');
       const communities = getStoredCommunities();
+      const unsplashImages = [
+        'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=60',
+        'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=500&auto=format&fit=crop&q=60',
+        'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop&q=60',
+        'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&auto=format&fit=crop&q=60',
+        'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=500&auto=format&fit=crop&q=60',
+        'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500&auto=format&fit=crop&q=60',
+      ];
       const newCommunity = {
         id: `c_${Date.now()}`,
         name: body.name || 'New Community',
@@ -506,6 +544,7 @@ const customAdapter: AxiosAdapter = async config => {
         members: 1,
         isPrivate: !!body.isPrivate,
         createdAt: new Date().toISOString(),
+        image: unsplashImages[Math.floor(Math.random() * unsplashImages.length)],
       };
       communities.push(newCommunity);
       saveStoredCommunities(communities);
@@ -594,7 +633,7 @@ const customAdapter: AxiosAdapter = async config => {
       const filtered = posts.filter((p: any) => p.id !== id);
       saveStoredPosts(filtered);
       return {
-        data: {success: true, message: 'Post deleted successfully'},
+        data: { success: true, message: 'Post deleted successfully' },
         status: 200,
         statusText: 'OK',
         headers: {},
@@ -617,7 +656,7 @@ const customAdapter: AxiosAdapter = async config => {
         };
       }
       return {
-        data: {message: 'Post not found'},
+        data: { message: 'Post not found' },
         status: 404,
         statusText: 'Not Found',
         headers: {},
@@ -731,7 +770,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
-          failedQueue.push({resolve, reject});
+          failedQueue.push({ resolve, reject });
         })
           .then(token => {
             originalRequest.headers.Authorization = `Bearer ${token}`;
@@ -761,16 +800,16 @@ axiosInstance.interceptors.response.use(
             },
           );
 
-          const {token: newAccessToken, refreshToken: newRefreshToken, user} = response.data;
+          const { token: newAccessToken, refreshToken: newRefreshToken, user } = response.data;
 
           secureStorage.setString('auth_token', newAccessToken);
           secureStorage.setString('auth_refresh_token', newRefreshToken);
 
           try {
-            const {store} = require('../Store/store');
-            const {setCredentials} = require('../Store/slices/authSlice');
+            const { store } = require('../Store/store');
+            const { setCredentials } = require('../Store/slices/authSlice');
             store.dispatch(
-              setCredentials({user, token: newAccessToken, refreshToken: newRefreshToken}),
+              setCredentials({ user, token: newAccessToken, refreshToken: newRefreshToken }),
             );
           } catch (reduxError) {
             console.error('[Redux Update Failure during Refresh]', reduxError);
@@ -789,8 +828,8 @@ axiosInstance.interceptors.response.use(
           secureStorage.clearAll();
 
           try {
-            const {store} = require('../Store/store');
-            const {clearCredentials} = require('../Store/slices/authSlice');
+            const { store } = require('../Store/store');
+            const { clearCredentials } = require('../Store/slices/authSlice');
             store.dispatch(clearCredentials());
           } catch (reduxError) {
             console.error('[Redux Reset Failure during Logout]', reduxError);
@@ -802,8 +841,8 @@ axiosInstance.interceptors.response.use(
         secureStorage.clearAll();
 
         try {
-          const {store} = require('../Store/store');
-          const {clearCredentials} = require('../Store/slices/authSlice');
+          const { store } = require('../Store/store');
+          const { clearCredentials } = require('../Store/slices/authSlice');
           store.dispatch(clearCredentials());
         } catch (reduxError) {
           console.error('[Redux Reset Failure]', reduxError);
@@ -820,6 +859,6 @@ axiosInstance.interceptors.response.use(
 );
 
 export const httpClient = (): typeof baseApi => {
-  const {baseApi: apiInstance} = require('./baseApi');
+  const { baseApi: apiInstance } = require('./baseApi');
   return apiInstance;
 };

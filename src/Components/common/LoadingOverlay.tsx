@@ -1,5 +1,6 @@
 import React from 'react';
-import {StyleSheet, View, ActivityIndicator, Text} from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
+import {Skeleton} from './Skeleton';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -25,7 +26,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       accessibilityRole="progressbar"
       accessibilityLabel={message}>
       <View style={[styles.card, {backgroundColor: colors.surface, borderColor: colors.border}]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Skeleton width={48} height={48} borderRadius={24} style={{alignSelf: 'center', marginBottom: hp('1.5%')}} />
         <Text
           style={[
             typography.bodySmall,

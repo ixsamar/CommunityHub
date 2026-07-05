@@ -6,12 +6,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator,
   TextInput,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {Skeleton} from '../../Components/common/Skeleton';
+import {GlassBackground} from '../../Components/common/GlassBackground';
 import {useRoute, useNavigation, RouteProp, CompositeNavigationProp} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {PostsStackParamList, RootStackParamList} from '../../Constance/globalTypes';
@@ -128,7 +129,7 @@ const CommentNode = ({comment, depth = 0}: {comment: Comment; depth: number}) =>
         {comment.content}
       </Text>
 
-      {/* Comment Actions (Like / Reply) */}
+      {}
       <View style={styles.commentActions}>
         <TouchableOpacity onPress={handleLike} style={styles.commentActionBtn} activeOpacity={0.7}>
           <Icon
@@ -174,7 +175,7 @@ export const PostDetailScreen = () => {
   const {data: post, isLoading, error} = useGetPostByIdQuery(postId);
   const [deletePost, {isLoading: isDeleting}] = useDeletePostMutation();
 
-  // Comments local state
+
   const [comments, setComments] = React.useState<Comment[]>([]);
   const [newCommentText, setNewCommentText] = React.useState('');
 
@@ -262,9 +263,60 @@ export const PostDetailScreen = () => {
 
   if (isLoading || isDeleting) {
     return (
-      <SafeAreaView style={[styles.loadingContainer, {backgroundColor: colors.background}]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </SafeAreaView>
+      <GlassBackground>
+        <SafeAreaView style={[styles.container, {backgroundColor: 'transparent'}]} edges={['top']}>
+          {}
+          <View style={styles.headerRow}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backBtn}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Go back">
+              <Icon name="arrow-back" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[typography.h3, {color: colors.text, fontWeight: '700', flex: 1, marginLeft: wp('2%')}]}>
+              Post
+            </Text>
+          </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            {}
+            <View style={{padding: wp('4%')}}>
+              {}
+              <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 12}}>
+                <Skeleton width={32} height={32} borderRadius={16} />
+                <View style={{marginLeft: 10, flex: 1}}>
+                  <Skeleton width="40%" height={14} borderRadius={3} style={{marginBottom: 4}} />
+                  <Skeleton width="25%" height={10} borderRadius={3} />
+                </View>
+              </View>
+
+              {}
+              <Skeleton width="85%" height={20} borderRadius={3} style={{marginBottom: 12}} />
+              <Skeleton width="100%" height={14} borderRadius={3} style={{marginBottom: 6}} />
+              <Skeleton width="100%" height={14} borderRadius={3} style={{marginBottom: 6}} />
+              <Skeleton width="70%" height={14} borderRadius={3} style={{marginBottom: 20}} />
+
+              {}
+              <Skeleton width="100%" height={hp('20%')} borderRadius={8} style={{marginBottom: 20}} />
+            </View>
+
+            {}
+            <View style={{paddingHorizontal: wp('4%')}}>
+              <Skeleton width="30%" height={16} borderRadius={3} style={{marginBottom: 16}} />
+              {[1, 2].map(k => (
+                <View key={k} style={{flexDirection: 'row', marginBottom: 16}}>
+                  <Skeleton width={24} height={24} borderRadius={12} />
+                  <View style={{marginLeft: 10, flex: 1}}>
+                    <Skeleton width="35%" height={12} borderRadius={3} style={{marginBottom: 6}} />
+                    <Skeleton width="90%" height={12} borderRadius={3} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </GlassBackground>
     );
   }
 
@@ -283,8 +335,9 @@ export const PostDetailScreen = () => {
   const showEdit = isAuthor;
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: colors.background}} edges={['top']}>
-      {/* Header Row */}
+    <GlassBackground>
+      <SafeAreaView style={{flex: 1, backgroundColor: 'transparent'}} edges={['top']}>
+      {}
       <View style={styles.headerRow}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -304,10 +357,10 @@ export const PostDetailScreen = () => {
         style={{flex: 1}}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Detailed Post Card */}
+          {}
           <PostCard post={post} isDetail={true} />
 
-          {/* Author Administrative Actions */}
+          {}
           {isAuthor && (
             <View style={[styles.actionsCard, {backgroundColor: colors.surface, borderColor: colors.border}]}>
               <Text style={[typography.caption, {color: colors.textSecondary, marginBottom: hp('1%'), fontWeight: '600'}]}>
@@ -355,7 +408,7 @@ export const PostDetailScreen = () => {
             </View>
           )}
 
-          {/* Comments Section */}
+          {}
           <View style={styles.commentsSection}>
             <Text style={[typography.bodyMedium, {color: colors.text, fontWeight: '700', marginBottom: hp('2%')}]}>
               Comments
@@ -371,7 +424,7 @@ export const PostDetailScreen = () => {
           </View>
         </ScrollView>
 
-        {/* Comment Composer Footer */}
+        {}
         <View
           style={[
             styles.composerContainer,
@@ -417,11 +470,15 @@ export const PostDetailScreen = () => {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </GlassBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

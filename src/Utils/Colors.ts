@@ -1,4 +1,4 @@
-// Colors configuration for light and dark themes
+
 
 export interface ColorTokens {
   primary: string;
@@ -43,10 +43,10 @@ export interface ColorTokens {
 
 export const colors: {light: ColorTokens; dark: ColorTokens} = {
   light: {
-    primary: 'hsl(218, 100%, 25%)', // Paytm Deep Blue (#002E7E)
+    primary: 'hsl(218, 100%, 25%)',
     primaryDark: 'hsl(218, 100%, 15%)',
-    primaryLight: 'hsl(210, 100%, 95%)', // Very soft sky blue background
-    secondary: 'hsl(194, 100%, 47%)', // Paytm Cyan (#00BAF2)
+    primaryLight: 'hsl(210, 100%, 95%)',
+    secondary: 'hsl(194, 100%, 47%)',
 
     background: 'hsl(0, 0%, 100%)',
     surface: 'hsl(210, 20%, 98%)',
@@ -73,23 +73,23 @@ export const colors: {light: ColorTokens; dark: ColorTokens} = {
     border: 'hsl(214, 32%, 91%)',
     divider: 'hsl(214, 32%, 94%)',
 
-    shadow: 'rgba(0, 29, 76, 0.05)', // Paytm navy tinted shadow
+    shadow: 'rgba(0, 29, 76, 0.05)',
 
     onPrimary: 'hsl(0, 0%, 100%)',
     onSurface: 'hsl(222, 47%, 11%)',
     onError: 'hsl(0, 0%, 100%)',
 
-    skeleton: 'hsl(214, 20%, 90%)',
-    skeletonHighlight: 'hsl(214, 20%, 97%)',
+    skeleton: 'hsl(214, 20%, 82%)',
+    skeletonHighlight: 'hsl(214, 20%, 90%)',
   },
 
   dark: {
-    primary: 'hsl(194, 100%, 47%)', // Paytm Cyan for visibility in dark mode
-    primaryDark: 'hsl(218, 100%, 25%)', // Paytm Deep Blue
+    primary: 'hsl(194, 100%, 47%)',
+    primaryDark: 'hsl(218, 100%, 25%)',
     primaryLight: 'rgba(0, 186, 242, 0.15)',
     secondary: 'hsl(194, 100%, 47%)',
 
-    background: 'hsl(218, 50%, 6%)', // Deep corporate navy background
+    background: 'hsl(218, 50%, 6%)',
     surface: 'hsl(218, 40%, 10%)',
     surfaceVariant: 'hsl(218, 35%, 15%)',
     surfaceElevated: 'hsl(218, 35%, 12%)',

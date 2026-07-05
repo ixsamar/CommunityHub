@@ -1,10 +1,11 @@
 import React from 'react';
-import {StyleSheet, View, ActivityIndicator, Text} from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import {useTheme} from '../../Utils/themeIndex';
+import {Skeleton} from '../common/Skeleton';
 
 interface Props {
   isLoading: boolean;
@@ -22,10 +23,7 @@ export const PaginationLoader: React.FC<Props> = React.memo(({isLoading, hasMore
     <View style={styles.container}>
       {isLoading ? (
         <View style={styles.loaderRow}>
-          <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={[typography.caption, {color: colors.textSecondary, marginLeft: wp('2%')}]}>
-            Loading more communities...
-          </Text>
+          <Skeleton width={wp('40%')} height={12} borderRadius={3} />
         </View>
       ) : (
         !hasMore && (

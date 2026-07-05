@@ -1,5 +1,5 @@
 import React, { ComponentType, lazy, Suspense } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinkingOptions } from '@react-navigation/native';
@@ -12,6 +12,7 @@ import {
   CommunityStackParamList,
   PostsStackParamList,
   ProfileStackParamList,
+  NotificationStackParamList,
   HomeTabParamList,
   RootStackParamList,
 } from '../Constance/globalTypes';
@@ -20,12 +21,7 @@ const lazyLoad = <T extends ComponentType<any>>(importFunc: () => Promise<{ defa
   const LazyComponent = lazy(importFunc);
 
   const LazyWrapper = (props: React.ComponentProps<T>) => (
-    <Suspense
-      fallback={
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="small" />
-        </View>
-      }>
+    <Suspense fallback={<View style={{ flex: 1 }} />}>
       <LazyComponent {...props} />
     </Suspense>
   );
@@ -37,38 +33,58 @@ const lazyLoad = <T extends ComponentType<any>>(importFunc: () => Promise<{ defa
 const LoginScreen = lazyLoad(() =>
   import('../Screens/auth/LoginScreen').then(m => ({ default: m.LoginScreen })),
 );
+LoginScreen.displayName = 'LoginScreen';
+
 const RegisterScreen = lazyLoad(() =>
   import('../Screens/auth/RegisterScreen').then(m => ({ default: m.RegisterScreen })),
 );
+RegisterScreen.displayName = 'RegisterScreen';
+
 const CommunityListScreen = lazyLoad(() =>
   import('../Screens/community/CommunityListScreen').then(m => ({
     default: m.CommunityListScreen,
   })),
 );
+CommunityListScreen.displayName = 'CommunityListScreen';
+
 const CommunityDetailScreen = lazyLoad(() =>
   import('../Screens/community/CommunityDetailScreen').then(m => ({
     default: m.CommunityDetailScreen,
   })),
 );
+CommunityDetailScreen.displayName = 'CommunityDetailScreen';
+
 const PostListScreen = lazyLoad(() =>
   import('../Screens/posts/PostListScreen').then(m => ({ default: m.PostListScreen })),
 );
+PostListScreen.displayName = 'PostListScreen';
+
 const CreatePostScreen = lazyLoad(() =>
   import('../Screens/posts/CreatePostScreen').then(m => ({ default: m.CreatePostScreen })),
 );
-// Lazy loaded post details viewer screen
+CreatePostScreen.displayName = 'CreatePostScreen';
+
 const PostDetailScreen = lazyLoad(() =>
   import('../Screens/posts/PostDetailScreen').then(m => ({ default: m.PostDetailScreen })),
 );
+PostDetailScreen.displayName = 'PostDetailScreen';
+
 const ProfileScreen = lazyLoad(() =>
   import('../Screens/profile/ProfileScreen').then(m => ({ default: m.ProfileScreen })),
 );
+ProfileScreen.displayName = 'ProfileScreen';
+
+const NotificationScreen = lazyLoad(() =>
+  import('../Screens/notifications/NotificationScreen').then(m => ({ default: m.NotificationScreen })),
+);
+NotificationScreen.displayName = 'NotificationScreen';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const CommunityStack = createNativeStackNavigator<CommunityStackParamList>();
 const PostsStack = createNativeStackNavigator<PostsStackParamList>();
 const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
+const NotificationStack = createNativeStackNavigator<NotificationStackParamList>();
 const Tab = createBottomTabNavigator<HomeTabParamList>();
 
 const AuthNavigator = () => (
@@ -99,6 +115,12 @@ const ProfileNavigator = () => (
   </ProfileStack.Navigator>
 );
 
+const NotificationNavigator = () => (
+  <NotificationStack.Navigator screenOptions={{ headerShown: false }}>
+    <NotificationStack.Screen name="NotificationList" component={NotificationScreen} />
+  </NotificationStack.Navigator>
+);
+
 const TabNavigator = () => {
   const { colors } = useTheme();
 
@@ -118,6 +140,8 @@ const TabNavigator = () => {
             iconName = focused ? 'people' : 'people-outline';
           } else if (route.name === 'PostsTab') {
             iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+          } else if (route.name === 'NotificationTab') {
+            iconName = focused ? 'notifications' : 'notifications-outline';
           } else if (route.name === 'ProfileTab') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -130,6 +154,11 @@ const TabNavigator = () => {
         options={{ title: 'Communities' }}
       />
       <Tab.Screen name="PostsTab" component={PostsNavigator} options={{ title: 'Posts' }} />
+      <Tab.Screen
+        name="NotificationTab"
+        component={NotificationNavigator}
+        options={{ title: 'Notifications' }}
+      />
       <Tab.Screen name="ProfileTab" component={ProfileNavigator} options={{ title: 'Profile' }} />
     </Tab.Navigator>
   );

@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
   ScrollView,
   RefreshControl,
-  ActivityIndicator,
   FlatList,
   Alert,
 } from 'react-native';
+import {Skeleton} from '../../Components/common/Skeleton';
+import {GlassBackground} from '../../Components/common/GlassBackground';
 import {LazyImage} from '../../Components/common/LazyImage';
 import {useRoute, RouteProp, useNavigation} from '@react-navigation/native';
 import {
@@ -89,16 +90,44 @@ export const CommunityDetailScreen = () => {
 
   if (isLoading && !isRefreshing) {
     return (
-      <SafeAreaView
-        style={[styles.container, {backgroundColor: colors.background}]}
-        edges={['top']}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[typography.bodyMedium, {color: colors.textSecondary, marginTop: hp('2%')}]}>
-            Loading community details...
-          </Text>
-        </View>
-      </SafeAreaView>
+      <GlassBackground>
+        <SafeAreaView style={[styles.container, {backgroundColor: 'transparent'}]} edges={['top']}>
+          {}
+          <View style={styles.backHeader}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backBtn}
+              activeOpacity={0.7}>
+              <Icon name="arrow-back" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <Text style={[typography.h3, {color: colors.text, fontWeight: '700', marginLeft: wp('2%')}]}>
+              Community
+            </Text>
+          </View>
+          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            {}
+            <Skeleton width="100%" height={hp('20%')} borderRadius={0} />
+
+            {}
+            <View style={{padding: wp('4%')}}>
+              <Skeleton width="70%" height={24} borderRadius={3} style={{marginBottom: 8}} />
+              <Skeleton width="30%" height={12} borderRadius={3} style={{marginBottom: 16}} />
+              <Skeleton width="100%" height={14} borderRadius={3} style={{marginBottom: 6}} />
+              <Skeleton width="90%" height={14} borderRadius={3} style={{marginBottom: 20}} />
+              <Skeleton width="100%" height={45} borderRadius={8} />
+            </View>
+
+            {}
+            {[1, 2].map(k => (
+              <View key={k} style={{padding: wp('4%'), borderBottomWidth: 1, borderBottomColor: colors.border}}>
+                <Skeleton width="40%" height={14} borderRadius={3} style={{marginBottom: 8}} />
+                <Skeleton width="95%" height={12} borderRadius={3} style={{marginBottom: 4}} />
+                <Skeleton width="75%" height={12} borderRadius={3} />
+              </View>
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </GlassBackground>
     );
   }
 
@@ -127,7 +156,8 @@ export const CommunityDetailScreen = () => {
   }
 
   return (
-    <View style={[styles.container, {backgroundColor: colors.background}]}>
+    <GlassBackground>
+      <View style={[styles.container, {backgroundColor: 'transparent'}]}>
       {}
       <SafeAreaView style={styles.headerFloatingContainer} edges={['top']}>
         <TouchableOpacity
@@ -219,9 +249,11 @@ export const CommunityDetailScreen = () => {
             disabled={isActionLoading}
             activeOpacity={0.8}>
             {isActionLoading ? (
-              <ActivityIndicator
-                size="small"
-                color={community.isJoined ? colors.text : '#ffffff'}
+              <Skeleton
+                width={36}
+                height={12}
+                borderRadius={3}
+                style={{backgroundColor: (community.isJoined ? colors.text : '#ffffff') + '40'}}
               />
             ) : (
               <View style={styles.actionBtnRow}>
@@ -336,12 +368,14 @@ export const CommunityDetailScreen = () => {
           </Text>
 
           {isLoadingPosts ? (
-            <View style={styles.loadingPostsBox}>
-              <ActivityIndicator size="small" color={colors.primary} />
-              <Text
-                style={[typography.caption, {color: colors.textSecondary, marginTop: hp('1%')}]}>
-                Loading posts...
-              </Text>
+            <View style={{paddingHorizontal: wp('6%')}}>
+              {[1, 2].map(k => (
+                <View key={k} style={{paddingVertical: hp('1.5%'), borderBottomWidth: 0.5, borderBottomColor: colors.border}}>
+                  <Skeleton width="45%" height={14} borderRadius={3} style={{marginBottom: 8}} />
+                  <Skeleton width="90%" height={10} borderRadius={3} style={{marginBottom: 4}} />
+                  <Skeleton width="75%" height={10} borderRadius={3} />
+                </View>
+              ))}
             </View>
           ) : errorPosts ? (
             <View
@@ -404,6 +438,7 @@ export const CommunityDetailScreen = () => {
         </View>
       </ScrollView>
     </View>
+    </GlassBackground>
   );
 };
 
