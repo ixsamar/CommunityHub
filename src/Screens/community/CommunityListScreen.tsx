@@ -126,6 +126,7 @@ export const CommunityListScreen = () => {
     async (community: Community) => {
       if (!isAuthenticated) {
         showToast('Please login to join this community!', 'error');
+        (navigation as any).navigate('Auth', {screen: 'Login'});
         return;
       }
       try {

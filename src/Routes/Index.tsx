@@ -166,7 +166,7 @@ const TabNavigator = () => {
 
 
 export const RootNavigator = () => {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading } = useAuth();
 
   if (isLoading) {
     return <SplashScreen />;
@@ -174,11 +174,8 @@ export const RootNavigator = () => {
 
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
-      {isAuthenticated ? (
-        <RootStack.Screen name="App" component={TabNavigator} />
-      ) : (
-        <RootStack.Screen name="Auth" component={AuthNavigator} />
-      )}
+      <RootStack.Screen name="App" component={TabNavigator} />
+      <RootStack.Screen name="Auth" component={AuthNavigator} />
     </RootStack.Navigator>
   );
 };

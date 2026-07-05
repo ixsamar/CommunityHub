@@ -83,8 +83,7 @@ export const FormInput: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: wp('90%'),
-    alignSelf: 'center',
+    width: '100%',
   },
   input: {
     borderWidth: 1,
