@@ -368,6 +368,12 @@ export const ProfileScreen = () => {
           <Text style={[typography.bodySmall, {color: colors.primary, fontWeight: '700'}]}>
             Community Hub
           </Text>
+          <Text style={[typography.caption, {color: colors.textSecondary, marginTop: 2, fontWeight: '600'}]}>
+            Developed for mindX360 Assignment
+          </Text>
+          <Text style={[typography.caption, {color: colors.textSecondary, marginTop: 1}]}>
+            Coordinator: Anupama Ajayan
+          </Text>
           <Text style={[typography.caption, {color: colors.textSecondary, marginTop: 2}]}>
             Version 1.0.0
           </Text>

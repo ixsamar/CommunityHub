@@ -14,11 +14,11 @@ import {usePressAnimation} from '../../Utils/animations';
 interface Props {
   community: Community;
   onPress: (id: string) => void;
+  onJoinPress?: (community: Community) => void;
 }
 
-export const CommunityCard: React.FC<Props> = React.memo(({community, onPress}) => {
-  const theme = useTheme();
-  const {colors, typography, spacing, borderRadius, dark} = theme;
+export const CommunityCard: React.FC<Props> = React.memo(({community, onPress, onJoinPress}) => {
+  const {colors, typography, spacing, borderRadius, dark} = useTheme();
   const {onPressIn, onPressOut, animatedStyle} = usePressAnimation();
 
   const handlePress = () => {
@@ -53,90 +53,99 @@ export const CommunityCard: React.FC<Props> = React.memo(({community, onPress}) 
           },
           animatedStyle,
         ]}>
-      <View style={styles.contentRow}>
-        {community.image ? (
-          <LazyImage
-            source={{uri: community.image}}
-            style={[
-              styles.image,
-              {backgroundColor: colors.surfaceVariant, borderRadius: borderRadius.md},
-            ]}
-            resizeMode="cover"
-          />
-        ) : (
-          <View
-            style={[
-              styles.imagePlaceholder,
-              {backgroundColor: colors.surfaceVariant, borderRadius: borderRadius.md},
-            ]}>
-            <Icon name="people" size={24} color={colors.textSecondary} />
-          </View>
-        )}
+        <View style={styles.contentRow}>
+          {community.image ? (
+            <LazyImage
+              source={{uri: community.image}}
+              style={[
+                styles.image,
+                {backgroundColor: colors.surfaceVariant, borderRadius: borderRadius.md},
+              ]}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={[
+                styles.imagePlaceholder,
+                {backgroundColor: colors.surfaceVariant, borderRadius: borderRadius.md},
+              ]}>
+              <Icon name="people" size={24} color={colors.textSecondary} />
+            </View>
+          )}
 
-        <View style={styles.textContainer}>
-          <View style={styles.titleRow}>
-            <Text
-              style={[typography.h3, {color: colors.text, flexShrink: 1}]}
-              numberOfLines={1}
-              maxFontSizeMultiplier={1.3}>
-              {community.name}
-            </Text>
-            {community.isPrivate && (
-              <View
-                style={[
-                  styles.privateBadge,
-                  {backgroundColor: colors.surfaceVariant, borderRadius: borderRadius.xs},
-                ]}>
-                <Icon name="lock-closed" size={10} color={colors.textSecondary} />
-                <Text
-                  maxFontSizeMultiplier={1.2}
-                  style={[typography.caption, {color: colors.textSecondary, marginLeft: 2}]}>
-                  Private
-                </Text>
-              </View>
-            )}
-          </View>
-
-          <Text
-            style={[typography.bodySmall, {color: colors.textSecondary, marginTop: hp('0.4%')}]}
-            numberOfLines={2}
-            maxFontSizeMultiplier={1.3}>
-            {community.description}
-          </Text>
-
-          <View style={styles.footerRow}>
-            <View style={styles.statItem}>
-              <Icon name="people-outline" size={14} color={colors.primary} />
+          <View style={styles.textContainer}>
+            <View style={styles.titleRow}>
               <Text
-                maxFontSizeMultiplier={1.2}
-                style={[
-                  typography.caption,
-                  {color: colors.textSecondary, marginLeft: wp('1%'), fontWeight: '600'},
-                ]}>
-                {community.members.toLocaleString()} members
+                style={[typography.h3, {color: colors.text, flexShrink: 1}]}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.3}>
+                {community.name}
               </Text>
+              {community.isPrivate && (
+                <View
+                  style={[
+                    styles.privateBadge,
+                    {backgroundColor: colors.surfaceVariant, borderRadius: borderRadius.xs},
+                  ]}>
+                  <Icon name="lock-closed" size={10} color={colors.textSecondary} />
+                  <Text
+                    maxFontSizeMultiplier={1.2}
+                    style={[typography.caption, {color: colors.textSecondary, marginLeft: 2}]}>
+                    Private
+                  </Text>
+                </View>
+              )}
             </View>
 
-            {community.isJoined && (
-              <View
-                style={[
-                  styles.joinedBadge,
-                  {backgroundColor: colors.successLight, borderRadius: borderRadius.sm},
-                ]}>
-                <Icon name="checkmark-circle" size={12} color={colors.success} />
+            <Text
+              style={[typography.bodySmall, {color: colors.textSecondary, marginTop: hp('0.4%')}]}
+              numberOfLines={2}
+              maxFontSizeMultiplier={1.3}>
+              {community.description}
+            </Text>
+
+            <View style={styles.footerRow}>
+              <View style={styles.statItem}>
+                <Icon name="people-outline" size={14} color={colors.primary} />
                 <Text
                   maxFontSizeMultiplier={1.2}
                   style={[
                     typography.caption,
-                    {color: colors.success, marginLeft: 3, fontWeight: '700'},
+                    {color: colors.textSecondary, marginLeft: wp('1%'), fontWeight: '600'},
                   ]}>
-                  Joined
+                  {community.members.toLocaleString()} members
                 </Text>
               </View>
-            )}
+            </View>
           </View>
+
+          <TouchableOpacity
+            style={[
+              styles.joinBtn,
+              {
+                backgroundColor: community.isJoined ? colors.surfaceVariant : 'transparent',
+                borderColor: community.isJoined ? colors.border : colors.primary,
+                borderRadius: borderRadius.sm || 6,
+              },
+            ]}
+            disabled={!onJoinPress}
+            onPress={e => {
+              e.stopPropagation();
+              onJoinPress?.(community);
+            }}
+            activeOpacity={0.8}>
+            <Text
+              style={[
+                typography.caption,
+                {
+                  color: community.isJoined ? colors.textSecondary : colors.primary,
+                  fontWeight: '700',
+                },
+              ]}>
+              {community.isJoined ? 'Joined' : 'Join'}
+            </Text>
+          </TouchableOpacity>
         </View>
-      </View>
       </Animated.View>
     </TouchableOpacity>
   );
@@ -196,11 +205,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  joinedBadge: {
-    flexDirection: 'row',
+  joinBtn: {
+    borderWidth: 1.5,
+    paddingVertical: hp('0.6%'),
+    paddingHorizontal: wp('3.5%'),
+    marginLeft: wp('2.5%'),
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    justifyContent: 'center',
+    minWidth: wp('17%'),
   },
 });

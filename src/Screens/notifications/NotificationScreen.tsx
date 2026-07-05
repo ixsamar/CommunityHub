@@ -9,6 +9,8 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Image,
+  ScrollView,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -17,15 +19,12 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Animated, {FadeInLeft, FadeOutRight} from 'react-native-reanimated';
-import {useNavigation} from '@react-navigation/native';
-
 import {useTheme} from '../../Utils/themeIndex';
 import {storage} from '../../Utils/mmkv';
 import {useToast} from '../../Components/common/ToastContext';
 import {GlassBackground} from '../../Components/common/GlassBackground';
 import {Skeleton} from '../../Components/common/Skeleton';
 import {EmptyState} from '../../Components/common/EmptyState';
-
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -35,72 +34,130 @@ interface NotificationItem {
   id: string;
   title: string;
   body: string;
-  type: 'post_liked' | 'post_comment' | 'community_joined' | 'system';
+  category: 'messages' | 'businesses' | 'workforce' | 'activities' | 'system';
   createdAt: string;
   isRead: boolean;
-  targetId: string;
-  targetType: 'post' | 'community' | 'system';
+  avatarUrl?: string;
+  iconName: string;
+  iconColor: string;
+  iconBgColor: string;
+  overlayIcon?: string;
+  overlayColor?: string;
 }
 
 const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'n1',
-    title: 'New Member Joined!',
-    body: 'Sarah Connor just joined the React Native Enthusiasts community.',
-    type: 'community_joined',
-    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+    title: 'New Comment on Profile',
+    body: 'Aarav Sharma left a comment: "Great acting skills shown in the last video audition!"',
+    category: 'workforce',
+    createdAt: '2026-07-02T10:00:00Z',
     isRead: false,
-    targetId: 'c_1',
-    targetType: 'community',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+    iconName: 'chatbubble',
+    iconColor: '#EF4444',
+    iconBgColor: '#FEE2E2',
+    overlayIcon: 'chatbubble',
+    overlayColor: '#FFB020',
   },
   {
     id: 'n2',
-    title: 'Someone liked your post',
-    body: 'Your post "Offline Persistence with MMKV" received a new upvote!',
-    type: 'post_liked',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
+    title: 'Comment on Caravan booking',
+    body: 'Priya Malhotra commented: "Please ensure the vanity mirrors have white LED lighting."',
+    category: 'messages',
+    createdAt: '2026-07-02T09:00:00Z',
     isRead: false,
-    targetId: 'p_1',
-    targetType: 'post',
+    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+    iconName: 'chatbubble',
+    iconColor: '#EF4444',
+    iconBgColor: '#FEE2E2',
+    overlayIcon: 'chatbubble',
+    overlayColor: '#10B981',
   },
   {
     id: 'n3',
-    title: 'New post published',
-    body: 'David Heinemeier published a new article: "Clean Code Architecture in 2026".',
-    type: 'post_comment',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 25).toISOString(),
-    isRead: true,
-    targetId: 'p_2',
-    targetType: 'post',
+    title: 'New Actor Match',
+    body: 'You matched with Amit Patel (Choreographer) for the upcoming Telugu musical.',
+    category: 'workforce',
+    createdAt: '2026-07-02T08:00:00Z',
+    isRead: false,
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+    iconName: 'people',
+    iconColor: '#F59E0B',
+    iconBgColor: '#FEF3C7',
+    overlayIcon: 'people',
+    overlayColor: '#FFB020',
   },
   {
     id: 'n4',
-    title: 'Welcome to Community Hub!',
-    body: 'Explore local groups, share thoughts, and write amazing posts today.',
-    type: 'system',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+    title: 'Shoot Bus Booking',
+    body: 'Suresh Reddy booked your Lux Shoot Bus for Mythri Movie Makers shoot in Gandipet.',
+    category: 'businesses',
+    createdAt: '2026-07-02T07:00:00Z',
+    isRead: false,
+    iconName: 'bus',
+    iconColor: '#10B981',
+    iconBgColor: '#D1FAE5',
+  },
+  {
+    id: 'n5',
+    title: 'Payment Received',
+    body: '₹75,000 received from Vyjayanthi Movies for Caravan rental.',
+    category: 'activities',
+    createdAt: '2026-07-01T15:00:00Z',
     isRead: true,
-    targetId: '',
-    targetType: 'system',
+    iconName: 'wallet',
+    iconColor: '#8B5CF6',
+    iconBgColor: '#EDE9FE',
+  },
+  {
+    id: 'n6',
+    title: 'Comment on Audition Video',
+    body: 'Director Sukumar commented: "Excellent screen presence. Please come to Jubilee Hills office for a look test."',
+    category: 'system',
+    createdAt: '2026-07-01T14:00:00Z',
+    isRead: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+    iconName: 'camera',
+    iconColor: '#F59E0B',
+    iconBgColor: '#FEF3C7',
+    overlayIcon: 'people',
+    overlayColor: '#FFB020',
+  },
+  {
+    id: 'n7',
+    title: 'New Message from Vikram',
+    body: 'Vikram: "Is the vintage Royal Enfield bike available for the pre-wedding shoot tomorrow?"',
+    category: 'messages',
+    createdAt: '2026-07-01T12:00:00Z',
+    isRead: false,
+    avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+    iconName: 'chatbubble',
+    iconColor: '#EF4444',
+    iconBgColor: '#FEE2E2',
+    overlayIcon: 'chatbubble',
+    overlayColor: '#10B981',
   },
 ];
 
 export const NotificationScreen = () => {
-  const theme = useTheme();
-  const {colors, typography, borderRadius, dark} = theme;
-  const navigation = useNavigation<any>();
+  const {colors, typography, borderRadius, dark} = useTheme();
   const {showToast} = useToast();
 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+  const [activeFilter, setActiveFilter] = useState<'all' | 'messages' | 'businesses' | 'workforce' | 'activities' | 'system'>('all');
 
   const loadNotifications = useCallback(() => {
     const raw = storage.getString('mock_notifications');
     if (raw) {
       try {
-        setNotifications(JSON.parse(raw));
+        const parsed = JSON.parse(raw);
+        if (parsed.length > 0 && !parsed[0].category) {
+          throw new Error('migration needed');
+        }
+        setNotifications(parsed);
       } catch {
         setNotifications(DEFAULT_NOTIFICATIONS);
         storage.set('mock_notifications', JSON.stringify(DEFAULT_NOTIFICATIONS));
@@ -123,44 +180,6 @@ export const NotificationScreen = () => {
     }, 1000);
     return () => clearTimeout(timer);
   }, [loadNotifications]);
-
-
-  useEffect(() => {
-    const liveTimer = setTimeout(() => {
-      const liveNotif: NotificationItem = {
-        id: `n_live_${Date.now()}`,
-        title: 'Community sync complete',
-        body: 'All local changes have been successfully synchronized with the offline store.',
-        type: 'system',
-        createdAt: new Date().toISOString(),
-        isRead: false,
-        targetId: '',
-        targetType: 'system',
-      };
-
-
-      let current: NotificationItem[] = [];
-      const raw = storage.getString('mock_notifications');
-      if (raw) {
-        try {
-          current = JSON.parse(raw);
-        } catch {
-          current = DEFAULT_NOTIFICATIONS;
-        }
-      } else {
-        current = DEFAULT_NOTIFICATIONS;
-      }
-
-
-      const updated = [liveNotif, ...current];
-      saveNotifications(updated);
-
-
-      showToast('New notification: Community sync complete!', 'info');
-    }, 10000);
-
-    return () => clearTimeout(liveTimer);
-  }, []);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -193,99 +212,27 @@ export const NotificationScreen = () => {
     showToast('All notifications marked as read', 'success');
   };
 
-  const handleClearAll = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    saveNotifications([]);
-    showToast('All notifications cleared', 'info');
+  const getFilteredData = () => {
+    if (activeFilter === 'all') return notifications;
+    return notifications.filter(n => n.category === activeFilter);
   };
 
-  const handleNotificationPress = (item: NotificationItem) => {
-
-    if (!item.isRead) {
-      const updated = notifications.map(n => (n.id === item.id ? {...n, isRead: true} : n));
-      saveNotifications(updated);
-    }
-
-
-    if (item.targetType === 'community' && item.targetId) {
-      navigation.navigate('CommunityTab', {
-        screen: 'CommunityDetails',
-        params: {communityId: item.targetId},
-      });
-    } else if (item.targetType === 'post' && item.targetId) {
-      navigation.navigate('PostsTab', {
-        screen: 'PostDetails',
-        params: {postId: item.targetId},
-      });
-    }
+  const getCategoryCount = (cat: string) => {
+    if (cat === 'all') return notifications.length;
+    return notifications.filter(n => n.category === cat).length;
   };
-
 
   const getGroupedNotifications = () => {
+    const filtered = getFilteredData();
     const groups: {title: string; data: NotificationItem[]}[] = [
-      {title: 'Today', data: []},
-      {title: 'Yesterday', data: []},
-      {title: 'Older', data: []},
+      {title: 'Older Notifications', data: []},
     ];
 
-    const todayStr = new Date().toDateString();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toDateString();
-
-    notifications.forEach(item => {
-      const itemDate = new Date(item.createdAt);
-      const itemDateStr = itemDate.toDateString();
-
-      if (itemDateStr === todayStr) {
-        groups[0].data.push(item);
-      } else if (itemDateStr === yesterdayStr) {
-        groups[1].data.push(item);
-      } else {
-        groups[2].data.push(item);
-      }
+    filtered.forEach(item => {
+      groups[0].data.push(item);
     });
 
     return groups.filter(g => g.data.length > 0);
-  };
-
-  const getIconName = (type: string) => {
-    switch (type) {
-      case 'post_liked':
-        return 'heart';
-      case 'post_comment':
-        return 'chatbubble-ellipses';
-      case 'community_joined':
-        return 'people';
-      default:
-        return 'notifications';
-    }
-  };
-
-  const getIconBg = (type: string) => {
-    switch (type) {
-      case 'post_liked':
-        return colors.errorLight;
-      case 'post_comment':
-        return colors.primaryLight;
-      case 'community_joined':
-        return colors.successLight;
-      default:
-        return colors.surfaceVariant;
-    }
-  };
-
-  const getIconColor = (type: string) => {
-    switch (type) {
-      case 'post_liked':
-        return colors.error;
-      case 'post_comment':
-        return colors.primary;
-      case 'community_joined':
-        return colors.success;
-      default:
-        return colors.textSecondary;
-    }
   };
 
   const renderSkeleton = () => (
@@ -311,30 +258,89 @@ export const NotificationScreen = () => {
     </View>
   );
 
+  const filterTabs = [
+    {id: 'all', label: 'All', icon: 'notifications', activeColor: colors.primary, textColor: '#00B2FE'},
+    {id: 'messages', label: 'Messages', icon: 'chatbubble-ellipses', activeColor: '#EF4444', textColor: '#EF4444'},
+    {id: 'businesses', label: 'Businesses', icon: 'bus', activeColor: '#10B981', textColor: '#10B981'},
+    {id: 'workforce', label: 'Workforce', icon: 'people', activeColor: '#F59E0B', textColor: '#F59E0B'},
+    {id: 'activities', label: 'Activities', icon: 'sparkles', activeColor: '#8B5CF6', textColor: '#8B5CF6'},
+    {id: 'system', label: 'System', icon: 'shield-checkmark', activeColor: '#3B82F6', textColor: '#3B82F6'},
+  ] as const;
+
   const grouped = getGroupedNotifications();
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  };
 
   return (
     <GlassBackground>
       <SafeAreaView style={[styles.container, {backgroundColor: 'transparent'}]} edges={['top']}>
-        {}
-        <View style={[styles.headerRow, {borderBottomColor: colors.border}]}>
-          <Text style={[typography.h2, {color: colors.text}]}>Notifications</Text>
-          {notifications.length > 0 && (
-            <View style={styles.headerActions}>
+        <View style={styles.headerRow}>
+          <Text style={[typography.h2, {color: colors.text, fontWeight: '800'}]}>All Notifications</Text>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              onPress={handleRefresh}
+              style={[styles.actionBtn, {borderColor: colors.border, marginRight: wp('2%')}]}
+              activeOpacity={0.7}>
+              <Icon name="refresh-outline" size={17} color={colors.text} />
+            </TouchableOpacity>
+            {notifications.length > 0 && (
               <TouchableOpacity
                 onPress={handleMarkAllRead}
-                style={[styles.actionBtn, {backgroundColor: colors.surfaceVariant, marginRight: wp('2%')}]}
+                style={[styles.markAllBtn, {borderColor: colors.border}]}
                 activeOpacity={0.7}>
-                <Icon name="checkmark-done" size={16} color={colors.primary} />
+                <Icon name="checkmark" size={15} color={colors.primary} style={styles.mr} />
+                <Text style={[typography.caption, {color: colors.text, fontWeight: '700'}]}>
+                  Mark all as read
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleClearAll}
-                style={[styles.actionBtn, {backgroundColor: colors.surfaceVariant}]}
-                activeOpacity={0.7}>
-                <Icon name="trash" size={16} color={colors.error} />
-              </TouchableOpacity>
-            </View>
-          )}
+            )}
+          </View>
+        </View>
+
+        <View style={styles.tabsContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabsScrollContent}>
+            {filterTabs.map(tab => {
+              const active = activeFilter === tab.id;
+              const count = getCategoryCount(tab.id);
+              return (
+                <TouchableOpacity
+                  key={tab.id}
+                  onPress={() => setActiveFilter(tab.id)}
+                  style={[
+                    styles.tabPill,
+                    {
+                      backgroundColor: active ? tab.activeColor : colors.surface,
+                      borderColor: active ? tab.activeColor : colors.border,
+                    },
+                  ]}
+                  activeOpacity={0.8}>
+                  <Icon
+                    name={tab.icon}
+                    size={14}
+                    color={active ? '#FFFFFF' : tab.textColor}
+                    style={styles.pillIcon}
+                  />
+                  <Text
+                    style={[
+                      typography.caption,
+                      {
+                        color: active ? '#FFFFFF' : colors.text,
+                        fontWeight: '700',
+                      },
+                    ]}>
+                    {tab.label} ({count})
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
 
         {isLoading ? (
@@ -347,13 +353,17 @@ export const NotificationScreen = () => {
             onAction={() => {
               const demo: NotificationItem = {
                 id: `n_demo_${Date.now()}`,
-                title: 'New community recommendation',
-                body: 'Check out "TypeScript Wizards", a community for senior developers.',
-                type: 'community_joined',
+                title: 'New Comment on Profile',
+                body: 'Aarav Sharma left a comment: "Great acting skills shown in the last video audition!"',
+                category: 'workforce',
                 createdAt: new Date().toISOString(),
                 isRead: false,
-                targetId: 'c_1',
-                targetType: 'community',
+                avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                iconName: 'chatbubble',
+                iconColor: '#EF4444',
+                iconBgColor: '#FEE2E2',
+                overlayIcon: 'chatbubble',
+                overlayColor: '#FFB020',
               };
               saveNotifications([demo, ...notifications]);
               showToast('Demo notification added!', 'success');
@@ -376,8 +386,14 @@ export const NotificationScreen = () => {
               <View style={styles.groupContainer}>
                 <Text
                   style={[
-                    typography.bodySmall,
-                    {color: colors.textSecondary, fontWeight: '700', marginVertical: hp('1%'), textTransform: 'uppercase'},
+                    typography.caption,
+                    {
+                      color: colors.textSecondary,
+                      fontWeight: '700',
+                      marginVertical: hp('1.2%'),
+                      letterSpacing: 0.8,
+                      textTransform: 'uppercase',
+                    },
                   ]}>
                   {group.title}
                 </Text>
@@ -389,78 +405,54 @@ export const NotificationScreen = () => {
                     style={[
                       styles.card,
                       {
-                        backgroundColor: item.isRead
-                          ? dark
-                            ? 'rgba(30, 41, 59, 0.45)'
-                            : 'rgba(255, 255, 255, 0.65)'
-                          : dark
-                          ? 'rgba(30, 41, 59, 0.7)'
-                          : 'rgba(255, 255, 255, 0.95)',
-                        borderColor: item.isRead
-                          ? dark
-                            ? 'rgba(255, 255, 255, 0.05)'
-                            : 'rgba(255, 255, 255, 0.3)'
-                          : colors.primary + '30',
+                        backgroundColor: colors.surface,
+                        borderColor: colors.border,
                         borderRadius: borderRadius.md,
-                        shadowColor: dark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 29, 76, 0.04)',
                       },
                     ]}>
-                    <TouchableOpacity
-                      onPress={() => handleNotificationPress(item)}
-                      style={styles.cardContent}
-                      activeOpacity={0.8}>
-                      {}
-                      {!item.isRead && (
-                        <View style={[styles.unreadDot, {backgroundColor: colors.primary}]} />
-                      )}
+                    {!item.isRead && (
+                      <View style={[styles.blueBarLeft, {backgroundColor: '#00B2FE'}]} />
+                    )}
 
-                      {}
-                      <View style={[styles.iconWrapper, {backgroundColor: getIconBg(item.type)}]}>
-                        <Icon name={getIconName(item.type)} size={18} color={getIconColor(item.type)} />
+                    <TouchableOpacity
+                      onPress={() => handleToggleRead(item.id)}
+                      onLongPress={() => handleDelete(item.id)}
+                      style={styles.cardInner}
+                      activeOpacity={0.9}>
+                      <View style={styles.avatarContainer}>
+                        {item.avatarUrl ? (
+                          <Image source={{uri: item.avatarUrl}} style={styles.avatar} />
+                        ) : (
+                          <View style={[styles.avatarPlaceholder, {backgroundColor: item.iconBgColor}]}>
+                            <Icon name={item.iconName} size={18} color={item.iconColor} />
+                          </View>
+                        )}
+                        {item.avatarUrl && item.overlayIcon && (
+                          <View style={[styles.avatarOverlay, {backgroundColor: item.overlayColor || colors.primary}]}>
+                            <Icon name={item.overlayIcon} size={9} color="#FFFFFF" />
+                          </View>
+                        )}
                       </View>
 
-                      {}
                       <View style={styles.textContainer}>
-                        <Text
-                          style={[
-                            typography.bodyMedium,
-                            {color: colors.text, fontWeight: item.isRead ? '500' : '700'},
-                          ]}
-                          numberOfLines={1}>
-                          {item.title}
-                        </Text>
-                        <Text
-                          style={[
-                            typography.bodySmall,
-                            {color: colors.textSecondary, marginTop: 2, lineHeight: 16},
-                          ]}
-                          numberOfLines={2}>
+                        <View style={styles.cardHeader}>
+                          <Text style={[styles.cardTitle, {color: colors.text}]} numberOfLines={1}>
+                            {item.title}
+                          </Text>
+                          <View style={styles.metaRow}>
+                            <Text style={[typography.caption, {color: colors.textSecondary}]}>
+                              {formatDate(item.createdAt)}
+                            </Text>
+                            {!item.isRead && (
+                              <View style={styles.blueDotRight} />
+                            )}
+                          </View>
+                        </View>
+                        <Text style={[typography.bodySmall, {color: colors.textSecondary, marginTop: hp('0.5%'), lineHeight: 17}]}>
                           {item.body}
                         </Text>
                       </View>
                     </TouchableOpacity>
-
-                    {}
-                    <View style={styles.cardActions}>
-                      <TouchableOpacity
-                        onPress={() => handleToggleRead(item.id)}
-                        style={[styles.cardActionBtn, {backgroundColor: colors.surfaceVariant}]}
-                        accessibilityRole="button"
-                        accessibilityLabel={item.isRead ? 'Mark as unread' : 'Mark as read'}>
-                        <Icon
-                          name={item.isRead ? 'mail-unread-outline' : 'mail-open-outline'}
-                          size={15}
-                          color={colors.textSecondary}
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => handleDelete(item.id)}
-                        style={[styles.cardActionBtn, {backgroundColor: colors.surfaceVariant, marginLeft: wp('1.5%')}]}
-                        accessibilityRole="button"
-                        accessibilityLabel="Delete notification">
-                        <Icon name="trash-outline" size={15} color={colors.error} />
-                      </TouchableOpacity>
-                    </View>
                   </Animated.View>
                 ))}
               </View>
@@ -481,8 +473,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: wp('4%'),
-    paddingVertical: hp('1.5%'),
-    borderBottomWidth: 1,
+    paddingVertical: hp('1.8%'),
   },
   headerActions: {
     flexDirection: 'row',
@@ -491,9 +482,40 @@ const styles = StyleSheet.create({
   actionBtn: {
     width: wp('8.5%'),
     height: wp('8.5%'),
-    borderRadius: 8,
+    borderRadius: 20,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  markAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingVertical: hp('0.6%'),
+    paddingHorizontal: wp('3.5%'),
+  },
+  mr: {
+    marginRight: 4,
+  },
+  tabsContainer: {
+    marginBottom: hp('1%'),
+  },
+  tabsScrollContent: {
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('0.5%'),
+  },
+  tabPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderRadius: 20,
+    paddingVertical: hp('0.8%'),
+    paddingHorizontal: wp('4%'),
+    marginRight: wp('2.5%'),
+  },
+  pillIcon: {
+    marginRight: 6,
   },
   skeletonContainer: {
     paddingHorizontal: wp('4%'),
@@ -518,54 +540,83 @@ const styles = StyleSheet.create({
     paddingBottom: hp('4%'),
   },
   groupContainer: {
-    marginBottom: hp('1%'),
+    marginBottom: hp('1.5%'),
   },
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: wp('3.5%'),
     marginVertical: hp('0.6%'),
-    borderWidth: 1.5,
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 2,
+    borderWidth: 1,
     position: 'relative',
+    overflow: 'hidden',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.03,
+    shadowRadius: 8,
+    elevation: 1,
   },
-  cardContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  unreadDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  blueBarLeft: {
     position: 'absolute',
-    left: -wp('1.5%'),
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4.5,
+    zIndex: 10,
   },
-  iconWrapper: {
-    width: wp('9%'),
-    height: wp('9%'),
-    borderRadius: wp('4.5%'),
+  cardInner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: wp('4%'),
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginTop: hp('0.3%'),
+  },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+  },
+  avatarPlaceholder: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarOverlay: {
+    position: 'absolute',
+    right: -3,
+    bottom: -3,
+    width: 17,
+    height: 17,
+    borderRadius: 8.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
   textContainer: {
     flex: 1,
-    marginLeft: wp('3%'),
+    marginLeft: wp('4%'),
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardTitle: {
+    fontSize: wp('3.8%'),
+    fontWeight: '700',
+    flex: 1,
     paddingRight: wp('2%'),
   },
-  cardActions: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  cardActionBtn: {
-    width: wp('7.5%'),
-    height: wp('7.5%'),
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+  blueDotRight: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#00B2FE',
+    marginLeft: wp('1.8%'),
   },
 });

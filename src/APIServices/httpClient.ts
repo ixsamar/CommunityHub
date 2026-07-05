@@ -83,32 +83,32 @@ const customAdapter: AxiosAdapter = async config => {
     const base = [
       {
         id: 'c1',
-        name: 'React Native Specialists',
+        name: 'Angular Enterprise [#18]',
         description:
-          'Deep dives into React Native internals, performance optimization, Reanimated, and native modules.',
-        members: 1420,
+          'Strict workspace setups, standalone directives, custom injection tokens, and more.',
+        members: 816,
         isPrivate: false,
         createdAt: '2026-01-15T08:00:00Z',
         image:
-          'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=500&auto=format&fit=crop&q=60',
+          'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&auto=format&fit=crop&q=60',
       },
       {
         id: 'c2',
-        name: 'UI/UX Design Pioneers',
+        name: 'Angular Enterprise [#28]',
         description:
-          'Stunning user interface concepts, modern user experience research, typography guidelines, and design systems.',
-        members: 890,
+          'Strict workspace setups, standalone directives, custom injection tokens, and more.',
+        members: 336,
         isPrivate: false,
         createdAt: '2026-02-10T10:30:00Z',
         image:
-          'https://images.unsplash.com/photo-1561070791-26c113006238?w=500&auto=format&fit=crop&q=60',
+          'https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=500&auto=format&fit=crop&q=60',
       },
       {
         id: 'c3',
-        name: 'Tech Startup Ecosystem',
+        name: 'Creative Coding & WebGL [#15]',
         description:
-          'Co-founders matching, early stage venture funding, pitch decks optimization, and scalable startup growth hacks.',
-        members: 3120,
+          'Three.js shaders, custom fragment styling, noise animations, and physics engine setups.',
+        members: 705,
         isPrivate: false,
         createdAt: '2025-12-01T12:00:00Z',
         image:
@@ -116,25 +116,25 @@ const customAdapter: AxiosAdapter = async config => {
       },
       {
         id: 'c4',
-        name: 'TypeScript Core & Types',
+        name: 'Creative Coding & WebGL [#25]',
         description:
-          'Strict typing challenges, TS compiler configurations, advanced utility types, and structural type system details.',
-        members: 640,
-        isPrivate: true,
+          'Three.js shaders, custom fragment styling, noise animations, and physics engine setups.',
+        members: 295,
+        isPrivate: false,
         createdAt: '2026-03-01T09:15:00Z',
         image:
           'https://images.unsplash.com/photo-1618401471353-b98aedd07871?w=500&auto=format&fit=crop&q=60',
       },
       {
         id: 'c5',
-        name: 'Next.js & Server Components',
+        name: 'Creative Design Studio',
         description:
-          'Next.js App Router, React Server Components, server actions, caching, and Vercel edge deployment strategies.',
-        members: 1850,
+          'UI/UX, prototyping, design systems, and client presentation frameworks.',
+        members: 1245,
         isPrivate: false,
         createdAt: '2026-01-20T14:45:00Z',
         image:
-          'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=500&auto=format&fit=crop&q=60',
+          'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60',
       },
       {
         id: 'c6',
@@ -358,6 +358,9 @@ const customAdapter: AxiosAdapter = async config => {
     if (data) {
       try {
         const parsed = JSON.parse(data);
+        if (parsed.length > 0 && parsed[0].name === 'React Native Specialists') {
+          throw new Error('stale mock name reset needed');
+        }
         let modified = false;
         const fixed = parsed.map((c: any, index: number) => {
           const baseItem = initial.find((x: any) => x.id === c.id);
