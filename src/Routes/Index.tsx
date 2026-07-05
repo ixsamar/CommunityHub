@@ -135,10 +135,9 @@ const TabNavigator = () => {
   );
 };
 
-import { useAppSelector } from '../Utils/hooks/useAppSelector';
 
 export const RootNavigator = () => {
-  const { isLoading } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return <SplashScreen />;
@@ -146,8 +145,11 @@ export const RootNavigator = () => {
 
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
-      <RootStack.Screen name="App" component={TabNavigator} />
-      <RootStack.Screen name="Auth" component={AuthNavigator} />
+      {isAuthenticated ? (
+        <RootStack.Screen name="App" component={TabNavigator} />
+      ) : (
+        <RootStack.Screen name="Auth" component={AuthNavigator} />
+      )}
     </RootStack.Navigator>
   );
 };

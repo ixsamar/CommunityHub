@@ -119,7 +119,7 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
                       style={[
                         styles.optionRow,
                         {
-                          backgroundColor: active ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                          backgroundColor: active ? colors.primaryLight : 'transparent',
                           borderRadius: 8,
                           paddingVertical: hp('1.2%'),
                           paddingHorizontal: wp('3%'),
@@ -173,7 +173,7 @@ export const FilterBottomSheet: React.FC<Props> = React.memo(
                       style={[
                         styles.optionRow,
                         {
-                          backgroundColor: active ? 'rgba(79, 70, 229, 0.08)' : 'transparent',
+                          backgroundColor: active ? colors.primaryLight : 'transparent',
                           borderRadius: 8,
                           paddingVertical: hp('1.2%'),
                           paddingHorizontal: wp('3%'),

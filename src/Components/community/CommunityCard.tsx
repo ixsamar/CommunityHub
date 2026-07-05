@@ -5,9 +5,11 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Animated from 'react-native-reanimated';
 import {useTheme} from '../../Utils/themeIndex';
 import {Community} from '../../Constance/globalTypes';
 import {LazyImage} from '../common/LazyImage';
+import {usePressAnimation} from '../../Utils/animations';
 
 interface Props {
   community: Community;
@@ -15,7 +17,9 @@ interface Props {
 }
 
 export const CommunityCard: React.FC<Props> = React.memo(({community, onPress}) => {
-  const {colors, typography, spacing, borderRadius} = useTheme();
+  const theme = useTheme();
+  const {colors, typography, spacing, borderRadius, dark} = theme;
+  const {onPressIn, onPressOut, animatedStyle} = usePressAnimation();
 
   const handlePress = () => {
     onPress(community.id);
@@ -29,22 +33,26 @@ export const CommunityCard: React.FC<Props> = React.memo(({community, onPress}) 
 
   return (
     <TouchableOpacity
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-          shadowColor: colors.shadow,
-          padding: spacing.md || wp('4%'),
-          marginVertical: hp('0.8%'),
-          borderRadius: borderRadius.lg,
-        },
-      ]}
       onPress={handlePress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
       activeOpacity={0.9}
       accessible={true}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}>
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            backgroundColor: dark ? 'rgba(30, 41, 59, 0.55)' : 'rgba(255, 255, 255, 0.75)',
+            borderColor: dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.45)',
+            shadowColor: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 29, 76, 0.05)',
+            padding: spacing.md || wp('4%'),
+            marginVertical: hp('0.8%'),
+            borderRadius: borderRadius.lg,
+          },
+          animatedStyle,
+        ]}>
       <View style={styles.contentRow}>
         {community.image ? (
           <LazyImage
@@ -129,6 +137,7 @@ export const CommunityCard: React.FC<Props> = React.memo(({community, onPress}) 
           </View>
         </View>
       </View>
+      </Animated.View>
     </TouchableOpacity>
   );
 });

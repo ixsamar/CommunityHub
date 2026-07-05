@@ -26,12 +26,24 @@ export const springConfig = {
 } as const;
 
 let _reduceMotion = false;
-AccessibilityInfo.isReduceMotionEnabled().then(v => {
-  _reduceMotion = v;
-});
-AccessibilityInfo.addEventListener('reduceMotionChanged', v => {
-  _reduceMotion = v;
-});
+if (AccessibilityInfo && typeof AccessibilityInfo.isReduceMotionEnabled === 'function') {
+  const p = AccessibilityInfo.isReduceMotionEnabled();
+  if (p && typeof p.then === 'function') {
+    p.then(
+      (v: boolean) => {
+        _reduceMotion = v;
+      },
+      () => {},
+    );
+  }
+}
+if (AccessibilityInfo && typeof AccessibilityInfo.addEventListener === 'function') {
+  try {
+    AccessibilityInfo.addEventListener('reduceMotionChanged', (v: boolean) => {
+      _reduceMotion = v;
+    });
+  } catch {}
+}
 
 const skipIfReduceMotion = (value: number) => (_reduceMotion ? value : value);
 

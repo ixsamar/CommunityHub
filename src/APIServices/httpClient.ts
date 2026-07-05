@@ -344,6 +344,61 @@ const customAdapter: AxiosAdapter = async config => {
     return posts;
   };
 
+  const getStoredCommunities = (): any[] => {
+    const data = storage.getString('mock_communities');
+    if (data) {
+      try {
+        return JSON.parse(data);
+      } catch {
+        // use initial
+      }
+    }
+    const initial = generateMockCommunities();
+    storage.set('mock_communities', JSON.stringify(initial));
+    return initial;
+  };
+
+  const saveStoredCommunities = (list: any[]) => {
+    storage.set('mock_communities', JSON.stringify(list));
+  };
+
+  const getStoredPosts = (): any[] => {
+    const data = storage.getString('mock_posts');
+    if (data) {
+      try {
+        return JSON.parse(data);
+      } catch {
+        // use initial
+      }
+    }
+    const initial = generateMockPosts();
+    storage.set('mock_posts', JSON.stringify(initial));
+    return initial;
+  };
+
+  const saveStoredPosts = (list: any[]) => {
+    storage.set('mock_posts', JSON.stringify(list));
+  };
+
+  if (url.endsWith('/auth/register') && config.method?.toUpperCase() === 'POST') {
+    const data = JSON.parse(config.data || '{}');
+    return {
+      data: {
+        user: {
+          id: 'usr_1',
+          name: data.name || 'New User',
+          email: data.email || 'user@example.com',
+        },
+        token: 'mock-access-token-' + Date.now(),
+        refreshToken: 'mock-refresh-token-' + Date.now(),
+      },
+      status: 201,
+      statusText: 'Created',
+      headers: {},
+      config,
+    };
+  }
+
   if (url.includes('/communities')) {
     if (url.endsWith('/join') && config.method?.toUpperCase() === 'POST') {
       const match = url.match(/\/communities\/([a-zA-Z0-9_-]+)\/join$/);
@@ -354,13 +409,13 @@ const customAdapter: AxiosAdapter = async config => {
           joined.push(id);
           saveJoinedCommunities(joined);
         }
-        const communities = generateMockCommunities();
+        const communities = getStoredCommunities();
         const found = communities.find((c: any) => c.id === id);
         if (found) {
           found.isJoined = true;
-          found.members += 1;
+          saveStoredCommunities(communities);
           return {
-            data: found,
+            data: { ...found, members: found.members + 1, isJoined: true },
             status: 200,
             statusText: 'OK',
             headers: {},
@@ -386,13 +441,13 @@ const customAdapter: AxiosAdapter = async config => {
           joined = joined.filter((x: string) => x !== id);
           saveJoinedCommunities(joined);
         }
-        const communities = generateMockCommunities();
+        const communities = getStoredCommunities();
         const found = communities.find((c: any) => c.id === id);
         if (found) {
           found.isJoined = false;
-          found.members = Math.max(0, found.members - 1);
+          saveStoredCommunities(communities);
           return {
-            data: found,
+            data: { ...found, members: Math.max(0, found.members - 1), isJoined: false },
             status: 200,
             statusText: 'OK',
             headers: {},
@@ -413,17 +468,19 @@ const customAdapter: AxiosAdapter = async config => {
     if (singleMatch && config.method?.toUpperCase() === 'GET') {
       const id = singleMatch[1];
       const joined = getJoinedCommunities();
-      const communities = generateMockCommunities();
+      const communities = getStoredCommunities();
       const found = communities.find((c: any) => c.id === id);
       if (found) {
-        found.isJoined = joined.includes(id);
-        if (found.isJoined) {
-          found.members += 1;
-        }
-        const posts = generateMockPosts();
-        found.postsCount = posts.filter((p: any) => p.communityId === id).length;
+        const isJoined = joined.includes(id);
+        const posts = getStoredPosts();
+        const postsCount = posts.filter((p: any) => p.communityId === id).length;
         return {
-          data: found,
+          data: {
+            ...found,
+            isJoined,
+            members: isJoined ? found.members + 1 : found.members,
+            postsCount,
+          },
           status: 200,
           statusText: 'OK',
           headers: {},
@@ -439,6 +496,33 @@ const customAdapter: AxiosAdapter = async config => {
       };
     }
 
+    if (config.method?.toUpperCase() === 'POST') {
+      const body = JSON.parse(config.data || '{}');
+      const communities = getStoredCommunities();
+      const newCommunity = {
+        id: `c_${Date.now()}`,
+        name: body.name || 'New Community',
+        description: body.description || '',
+        members: 1,
+        isPrivate: !!body.isPrivate,
+        createdAt: new Date().toISOString(),
+      };
+      communities.push(newCommunity);
+      saveStoredCommunities(communities);
+
+      const joined = getJoinedCommunities();
+      joined.push(newCommunity.id);
+      saveJoinedCommunities(joined);
+
+      return {
+        data: { ...newCommunity, isJoined: true },
+        status: 201,
+        statusText: 'Created',
+        headers: {},
+        config,
+      };
+    }
+
     if (config.method?.toUpperCase() === 'GET') {
       const params = config.params || {};
       const search = (params.search || '').toLowerCase();
@@ -448,7 +532,7 @@ const customAdapter: AxiosAdapter = async config => {
       const limit = parseInt(params.limit || '10', 10);
 
       const joined = getJoinedCommunities();
-      let list = generateMockCommunities().map((c: any) => {
+      let list = getStoredCommunities().map((c: any) => {
         const isJoined = joined.includes(c.id);
         return {
           ...c,
@@ -503,10 +587,48 @@ const customAdapter: AxiosAdapter = async config => {
   }
 
   if (url.includes('/posts')) {
+    const deleteMatch = url.match(/\/posts\/([a-zA-Z0-9_-]+)$/);
+    if (deleteMatch && config.method?.toUpperCase() === 'DELETE') {
+      const id = deleteMatch[1];
+      const posts = getStoredPosts();
+      const filtered = posts.filter((p: any) => p.id !== id);
+      saveStoredPosts(filtered);
+      return {
+        data: {success: true, message: 'Post deleted successfully'},
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config,
+      };
+    }
+
+    const getMatch = url.match(/\/posts\/([a-zA-Z0-9_-]+)$/);
+    if (getMatch && config.method?.toUpperCase() === 'GET') {
+      const id = getMatch[1];
+      const posts = getStoredPosts();
+      const found = posts.find((p: any) => p.id === id);
+      if (found) {
+        return {
+          data: found,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+        };
+      }
+      return {
+        data: {message: 'Post not found'},
+        status: 404,
+        statusText: 'Not Found',
+        headers: {},
+        config,
+      };
+    }
+
     if (config.method?.toUpperCase() === 'GET') {
       const params = config.params || {};
       const communityId = params.communityId;
-      let posts = generateMockPosts();
+      let posts = getStoredPosts();
       if (communityId) {
         posts = posts.filter((p: any) => p.communityId === communityId);
       }
@@ -525,8 +647,9 @@ const customAdapter: AxiosAdapter = async config => {
 
     if (config.method?.toUpperCase() === 'POST') {
       const body = JSON.parse(config.data || '{}');
+      const posts = getStoredPosts();
       const newPost = {
-        id: `p_${Date.now()}`,
+        id: body.id || `p_${Date.now()}`,
         title: body.title || 'Untitled',
         content: body.content || '',
         communityId: body.communityId,
@@ -534,6 +657,8 @@ const customAdapter: AxiosAdapter = async config => {
         authorName: 'Samara Simha Reddy',
         createdAt: new Date().toISOString(),
       };
+      posts.push(newPost);
+      saveStoredPosts(posts);
       return {
         data: newPost,
         status: 201,
@@ -574,7 +699,7 @@ export const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  adapter: process.env.NODE_ENV === 'test' ? customAdapter : undefined,
+  adapter: customAdapter,
 });
 
 axiosInstance.interceptors.request.use(
@@ -632,7 +757,7 @@ axiosInstance.interceptors.response.use(
             },
             {
               timeout: ENV.API_TIMEOUT,
-              adapter: process.env.NODE_ENV === 'test' ? customAdapter : undefined,
+              adapter: customAdapter,
             },
           );
 

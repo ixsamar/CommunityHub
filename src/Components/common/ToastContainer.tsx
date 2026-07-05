@@ -60,9 +60,6 @@ const ToastItem: React.FC<{item: ToastMessage; onDismiss: (id: string) => void}>
         return colors.primary;
     }
   };
-
-  const isSnackbar = !!item.action;
-
   return (
     <Animated.View
       style={[

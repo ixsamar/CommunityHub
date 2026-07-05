@@ -12,12 +12,19 @@ import {clearCredentials} from '../../Store/slices/authSlice';
 import {setThemeMode, ThemeMode} from '../../Store/slices/themeSlice';
 import {secureStorage} from '../../Utils/mmkv';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, CompositeNavigationProp} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {ProfileStackParamList, RootStackParamList} from '../../Constance/globalTypes';
+
+type NavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<ProfileStackParamList, 'Profile'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 export const ProfileScreen = () => {
   const {colors, typography, borderRadius} = useTheme();
   const dispatch = useAppDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
 
   const user = useAppSelector(state => state.auth.user);
   const currentThemeMode = useAppSelector(state => state.theme?.mode ?? 'system');
@@ -99,7 +106,7 @@ export const ProfileScreen = () => {
                 borderRadius: borderRadius.lg,
               },
             ]}
-            onPress={() => (navigation as any).navigate('Auth')}
+            onPress={() => navigation.navigate('Auth', { screen: 'Login' })}
             activeOpacity={0.8}>
             <View style={[styles.largeAvatar, {backgroundColor: colors.primary + '10'}]}>
               <Icon name="log-in-outline" size={24} color={colors.primary} />

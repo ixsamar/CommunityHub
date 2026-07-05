@@ -1,7 +1,6 @@
 import {AuthRepository, IAuthRepository} from './authRepository';
 import {BiometricsService} from '../biometricsService';
 import {secureStorage} from '../../Utils/mmkv';
-import {User} from '../../Constance/globalTypes';
 
 export class AuthService {
   private authRepository: IAuthRepository;

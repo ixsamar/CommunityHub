@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any, react/display-name */
 jest.mock('react-native-mmkv', () => {
   const store: Record<string, string> = {};
   return {
@@ -57,3 +58,19 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('react-native-screens', () => ({
   enableScreens: jest.fn(),
 }));
+
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      addListener: jest.fn(() => jest.fn()),
+      setOptions: jest.fn(),
+    }),
+    useRoute: () => ({
+      params: {},
+    }),
+  };
+});

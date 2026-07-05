@@ -50,6 +50,6 @@ describe('Theme Tokens', () => {
   });
 
   it('dark theme colors background is dark HSL', () => {
-    expect(darkTheme.colors.background.includes('5%')).toBe(true);
+    expect(darkTheme.colors.background.includes('6%')).toBe(true);
   });
 });

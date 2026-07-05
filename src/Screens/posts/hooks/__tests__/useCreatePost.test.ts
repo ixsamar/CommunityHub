@@ -20,6 +20,8 @@ jest.mock('../../../../Components/common/ToastContext', () => ({
 
 jest.mock('../../../../APIServices/posts/postsApi', () => ({
   useCreatePostMutation: () => [mockCreatePostTrigger, {isLoading: false}],
+  useUpdatePostMutation: () => [jest.fn(), {isLoading: false}],
+  useGetPostByIdQuery: () => ({data: null, isLoading: false}),
 }));
 
 jest.mock('../../../../APIServices/community/communityApi', () => ({

@@ -27,7 +27,13 @@ const saveOfflineQueue = (queue: OfflineAction[]) => {
 export const offlineMiddleware: Middleware = _store => next => async action => {
   const typedAction = action as OfflineAction;
 
-  if (typedAction.type.endsWith('/pending') && typedAction.meta?.arg) {
+  if (
+    typedAction &&
+    typeof typedAction === 'object' &&
+    typeof typedAction.type === 'string' &&
+    typedAction.type.endsWith('/pending') &&
+    typedAction.meta?.arg
+  ) {
     const arg = typedAction.meta.arg as Record<string, unknown>;
     const isMutation = arg.type === 'mutation';
     if (isMutation) {

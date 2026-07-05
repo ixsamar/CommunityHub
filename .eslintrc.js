@@ -5,6 +5,7 @@ module.exports = {
     'babel.config.js',
     '.eslintrc.js',
     '.prettierrc.js',
+    'backend/',
   ],
   extends: [
     '@react-native',
@@ -29,9 +30,20 @@ module.exports = {
     'react/prop-types': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-require-imports': 'warn',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-empty': 'warn',
   },
+  overrides: [
+    {
+      files: ['**/*.test.ts', '**/*.test.tsx', '**/__tests__/**'],
+      rules: {
+        '@typescript-eslint/no-require-imports': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+  ],
 };

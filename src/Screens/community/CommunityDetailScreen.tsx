@@ -26,8 +26,6 @@ import {useCommunityDetail} from './hooks/useCommunityDetail';
 import {RetryCard} from '../../Components/community/RetryCard';
 import {OfflineCard} from '../../Components/community/OfflineCard';
 import {useAuth} from '../auth/hooks/useAuth';
-import {useAppDispatch} from '../../Utils/hooks/useAppDispatch';
-import {clearCredentials} from '../../Store/slices/authSlice';
 
 type ScreenRouteProp = RouteProp<CommunityStackParamList, 'CommunityDetails'>;
 
@@ -37,7 +35,6 @@ export const CommunityDetailScreen = () => {
   const navigation = useNavigation();
   const {communityId} = route.params;
   const {isAuthenticated} = useAuth();
-  const dispatch = useAppDispatch();
 
   const {
     community,

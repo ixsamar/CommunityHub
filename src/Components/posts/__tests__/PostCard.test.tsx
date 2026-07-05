@@ -52,6 +52,48 @@ jest.mock('../../../Utils/hooks/useAppDispatch', () => ({
   useAppDispatch: () => mockAppDispatch,
 }));
 
+jest.mock('../../../Screens/auth/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { id: 'user_99', name: 'Alex Johnson' },
+    isAuthenticated: true,
+  }),
+}));
+
+jest.mock('../../common/ToastContext', () => ({
+  useToast: () => ({
+    showToast: jest.fn(),
+  }),
+}));
+
+jest.mock('../../../APIServices/community/communityApi', () => ({
+  communityApi: {
+    useGetCommunityByIdQuery: () => ({
+      data: { name: 'React Native Developers' },
+      isLoading: false,
+    }),
+  },
+}));
+
+jest.mock('../../../APIServices/posts/postsApi', () => ({
+  postsApi: {
+    useDeletePostMutation: () => [jest.fn(), { isLoading: false }],
+    endpoints: {
+      createPost: {
+        initiate: jest.fn().mockImplementation(() => {
+          const action = {
+            type: 'mock_create_post',
+            unwrap: jest.fn().mockResolvedValue({}),
+          };
+          return action as any;
+        }),
+      },
+    },
+    util: {
+      updateQueryData: jest.fn().mockImplementation(() => ({ type: 'mock_update_query_data' })),
+    },
+  },
+}));
+
 const mockPost: Post = {
   id: 'post_123',
   title: 'Understanding React Native Architecture',
@@ -68,7 +110,7 @@ describe('PostCard', () => {
   it('renders author info, title, and body content', () => {
     const {getByText} = render(<PostCard post={mockPost} />);
 
-    expect(getByText('Alex Johnson')).toBeTruthy();
+    expect(getByText(/Alex Johnson/)).toBeTruthy();
     expect(getByText('Understanding React Native Architecture')).toBeTruthy();
     expect(getByText('The bridge, the fabric, and the future JSI. Let us dive deep.')).toBeTruthy();
   });
@@ -101,6 +143,14 @@ describe('PostCard', () => {
 
   it('triggers manual sync and updates status when retry button is pressed', () => {
     mockAppDispatch.mockClear();
+    const {store} = require('../../../Store/store');
+    jest.spyOn(store, 'dispatch').mockImplementation((action: any) => {
+      return {
+        type: typeof action === 'string' ? action : action?.type || 'mock_action',
+        unwrap: jest.fn().mockResolvedValue({}),
+      } as any;
+    });
+
     const {QueueManager} = require('../../../APIServices/offline/QueueManager');
 
     const failedPost = {

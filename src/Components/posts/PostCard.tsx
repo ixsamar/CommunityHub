@@ -14,6 +14,7 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Animated from 'react-native-reanimated';
 import {useTheme} from '../../Utils/themeIndex';
 import {Post} from '../../Constance/globalTypes';
 import {useAppDispatch} from '../../Utils/hooks/useAppDispatch';
@@ -24,6 +25,7 @@ import {Logger} from '../../Utils/logger';
 import {useNavigation} from '@react-navigation/native';
 import {useAuth} from '../../Screens/auth/hooks/useAuth';
 import {useToast} from '../common/ToastContext';
+import {usePressAnimation} from '../../Utils/animations';
 
 interface Props {
   post: Post;
@@ -32,7 +34,8 @@ interface Props {
 }
 
 export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = false}) => {
-  const {colors, typography, spacing, borderRadius} = useTheme();
+  const theme = useTheme();
+  const {colors, typography, spacing, borderRadius, dark} = theme;
   const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
   const {user} = useAuth();
@@ -126,24 +129,23 @@ export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = 
     : '';
   const accessibilityLabel = `Post by ${post.authorName} on ${formatPostDate(post.createdAt)}. Title: ${post.title}. Content: ${post.content}. ${statusInfo}`;
 
-  const CardContainer = onPress ? TouchableOpacity : View;
+  const {onPressIn, onPressOut, animatedStyle} = usePressAnimation();
 
-  return (
-    <CardContainer
-      onPress={onPress}
-      activeOpacity={onPress ? 0.7 : 1}
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          padding: spacing.md || wp('4%'),
-          marginVertical: hp('0.8%'),
-          shadowColor: colors.shadow,
-          borderRadius: borderRadius.lg,
-        },
-      ]}>
-      {}
+  const cardStyle = [
+    styles.card,
+    {
+      backgroundColor: dark ? 'rgba(30, 41, 59, 0.55)' : 'rgba(255, 255, 255, 0.75)',
+      borderColor: dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.45)',
+      padding: spacing.md || wp('4%'),
+      marginVertical: hp('0.8%'),
+      shadowColor: dark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 29, 76, 0.05)',
+      borderRadius: borderRadius.lg,
+      borderWidth: 1.5,
+    },
+  ];
+
+  const content = (
+    <>
       <View style={styles.headerRow}>
         <View style={styles.authorRow}>
           <View
@@ -171,7 +173,6 @@ export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = 
           </View>
         </View>
 
-        {}
         {post.isPending && (
           <View
             style={[
@@ -239,7 +240,6 @@ export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = 
         )}
       </View>
 
-      {}
       <Text
         maxFontSizeMultiplier={1.3}
         style={[
@@ -249,7 +249,6 @@ export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = 
         {post.title}
       </Text>
 
-      {}
       <Text
         maxFontSizeMultiplier={1.3}
         numberOfLines={isDetail ? undefined : 2}
@@ -258,7 +257,6 @@ export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = 
         {post.content}
       </Text>
 
-      {}
       {post.images && post.images.length > 0 && (
         <ScrollView
           horizontal
@@ -277,7 +275,33 @@ export const PostCard: React.FC<Props> = React.memo(({post, onPress, isDetail = 
           ))}
         </ScrollView>
       )}
-    </CardContainer>
+    </>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        activeOpacity={0.85}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}>
+        <Animated.View style={[cardStyle, animatedStyle]}>
+          {content}
+        </Animated.View>
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View
+      accessible={true}
+      accessibilityLabel={accessibilityLabel}
+      style={cardStyle}>
+      {content}
+    </View>
   );
 });
 

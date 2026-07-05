@@ -23,10 +23,13 @@ export const FormPasswordInput: React.FC<Props> = ({
   style,
   placeholderTextColor,
   accessibilityHint,
+  onFocus,
+  onBlur,
   ...textInputProps
 }) => {
   const {colors, typography} = useTheme();
   const [secure, setSecure] = useState(true);
+  const [isFocused, setIsFocused] = React.useState(false);
   const {field, fieldState} = useController({
     name,
     rules,
@@ -45,7 +48,8 @@ export const FormPasswordInput: React.FC<Props> = ({
           styles.inputContainer,
           {
             backgroundColor: colors.surface,
-            borderColor: hasError ? colors.error : colors.border,
+            borderColor: hasError ? colors.error : isFocused ? colors.primary : colors.border,
+            borderWidth: isFocused ? 1.5 : 1,
           },
         ]}>
         <TextInput
@@ -59,7 +63,15 @@ export const FormPasswordInput: React.FC<Props> = ({
           ]}
           value={field.value}
           onChangeText={field.onChange}
-          onBlur={field.onBlur}
+          onFocus={(e) => {
+            setIsFocused(true);
+            if (onFocus) onFocus(e);
+          }}
+          onBlur={(e) => {
+            setIsFocused(false);
+            field.onBlur();
+            if (onBlur) onBlur(e);
+          }}
           secureTextEntry={secure}
           placeholderTextColor={placeholderTextColor || colors.textSecondary}
           accessibilityLabel={label}

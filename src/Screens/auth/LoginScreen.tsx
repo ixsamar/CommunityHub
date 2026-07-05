@@ -212,7 +212,7 @@ export const LoginScreen = () => {
               style={styles.registerLink}
               activeOpacity={0.7}>
               <Text style={[typography.bodySmall, {color: colors.primary, fontWeight: '600'}]}>
-                Don't have an account? Sign Up
+                {"Don't have an account? Sign Up"}
               </Text>
             </TouchableOpacity>
           </View>

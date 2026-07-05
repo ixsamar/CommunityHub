@@ -30,6 +30,7 @@ import {RetryCard} from '../../Components/community/RetryCard';
 import {EmptyState} from '../../Components/common/EmptyState';
 import {Community} from '../../Constance/globalTypes';
 import {PerformanceMonitor} from '../../Utils/performance';
+import {GlassBackground} from '../../Components/common/GlassBackground';
 
 type NavigationProp = NativeStackNavigationProp<CommunityStackParamList, 'CommunityList'>;
 
@@ -124,36 +125,41 @@ export const CommunityListScreen = () => {
 
   if (isLoading) {
     return (
-      <SafeAreaView
-        style={[
-          styles.container,
-          {backgroundColor: colors.background, paddingHorizontal: wp('4%')},
-        ]}
-        edges={['top', 'left', 'right']}>
-        <View style={styles.header}>
-          <Text style={[typography.h2, {color: colors.text}]}>Communities</Text>
-        </View>
-        <SearchBar value={localSearch} onChangeText={setLocalSearch} style={styles.searchBar} />
-        <LoadingSkeleton />
-      </SafeAreaView>
+      <GlassBackground>
+        <SafeAreaView
+          style={[
+            styles.container,
+            {backgroundColor: 'transparent', paddingHorizontal: wp('4%')},
+          ]}
+          edges={['top', 'left', 'right']}>
+          <View style={styles.header}>
+            <Text style={[typography.h2, {color: colors.text}]}>Communities</Text>
+          </View>
+          <SearchBar value={localSearch} onChangeText={setLocalSearch} style={styles.searchBar} />
+          <LoadingSkeleton />
+        </SafeAreaView>
+      </GlassBackground>
     );
   }
 
   if (error && communities.length === 0) {
     return (
-      <SafeAreaView
-        style={[styles.container, {backgroundColor: colors.background}]}
-        edges={['top', 'left', 'right']}>
-        <RetryCard onRetry={handleRefresh} />
-      </SafeAreaView>
+      <GlassBackground>
+        <SafeAreaView
+          style={[styles.container, {backgroundColor: 'transparent'}]}
+          edges={['top', 'left', 'right']}>
+          <RetryCard onRetry={handleRefresh} />
+        </SafeAreaView>
+      </GlassBackground>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[styles.container, {backgroundColor: colors.background}]}
-      edges={['top', 'left', 'right']}>
-      <View style={[styles.mainWrapper, {paddingHorizontal: wp('4%')}]}>
+    <GlassBackground>
+      <SafeAreaView
+        style={[styles.container, {backgroundColor: 'transparent'}]}
+        edges={['top', 'left', 'right']}>
+        <View style={[styles.mainWrapper, {paddingHorizontal: wp('4%')}]}>
         {}
         <View style={styles.header}>
           <Text style={[typography.h2, {color: colors.text}]}>Communities</Text>
@@ -223,7 +229,8 @@ export const CommunityListScreen = () => {
         filterType={filterType}
         onFilterChange={handleFilterChange}
       />
-    </SafeAreaView>
+      </SafeAreaView>
+    </GlassBackground>
   );
 };
 

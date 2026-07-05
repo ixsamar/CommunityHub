@@ -23,9 +23,12 @@ export const FormInput: React.FC<Props> = ({
   style,
   placeholderTextColor,
   accessibilityHint,
+  onFocus,
+  onBlur,
   ...textInputProps
 }) => {
   const {colors, typography} = useTheme();
+  const [isFocused, setIsFocused] = React.useState(false);
   const {field, fieldState} = useController({
     name,
     rules,
@@ -45,14 +48,23 @@ export const FormInput: React.FC<Props> = ({
           {
             color: colors.text,
             backgroundColor: colors.surface,
-            borderColor: hasError ? colors.error : colors.border,
+            borderColor: hasError ? colors.error : isFocused ? colors.primary : colors.border,
+            borderWidth: isFocused ? 1.5 : 1,
             padding: hp('1.5%'),
           },
           style,
         ]}
         value={field.value}
         onChangeText={field.onChange}
-        onBlur={field.onBlur}
+        onFocus={(e) => {
+          setIsFocused(true);
+          if (onFocus) onFocus(e);
+        }}
+        onBlur={(e) => {
+          setIsFocused(false);
+          field.onBlur();
+          if (onBlur) onBlur(e);
+        }}
         placeholderTextColor={placeholderTextColor || colors.textSecondary}
         accessibilityLabel={label}
         accessibilityHint={accessibilityHint}

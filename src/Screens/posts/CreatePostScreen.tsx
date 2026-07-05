@@ -32,7 +32,7 @@ import {useCreateCommunityMutation} from '../../APIServices/community/communityA
 type ScreenRouteProp = RouteProp<PostsStackParamList, 'CreatePost'>;
 
 export const CreatePostScreen = () => {
-  const {colors, typography, borderRadius} = useTheme();
+  const {colors, typography} = useTheme();
   const route = useRoute<ScreenRouteProp>();
   const navigation = useNavigation();
   const {showToast} = useToast();

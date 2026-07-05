@@ -5,17 +5,15 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, CompositeNavigationProp} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {FlashList} from '@shopify/flash-list';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import {useTheme} from '../../Utils/themeIndex';
-import {PostsStackParamList} from '../../Constance/globalTypes';
+import {PostsStackParamList, RootStackParamList} from '../../Constance/globalTypes';
 import {usePosts} from './hooks/usePosts';
 import {useAuth} from '../auth/hooks/useAuth';
-import {useAppDispatch} from '../../Utils/hooks/useAppDispatch';
-import {clearCredentials} from '../../Store/slices/authSlice';
 import {PostCard} from '../../Components/posts/PostCard';
 import {OfflineCard} from '../../Components/community/OfflineCard';
 import {RetryCard} from '../../Components/community/RetryCard';
@@ -25,7 +23,10 @@ import {PaginationLoader} from '../../Components/community/PaginationLoader';
 import {Post} from '../../Constance/globalTypes';
 import {PerformanceMonitor} from '../../Utils/performance';
 
-type NavigationProp = NativeStackNavigationProp<PostsStackParamList, 'PostList'>;
+type NavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<PostsStackParamList, 'PostList'>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 export const PostListScreen = () => {
   const {colors, typography, spacing} = useTheme();
@@ -43,7 +44,6 @@ export const PostListScreen = () => {
     handleLoadMore,
   } = usePosts();
   const {isAuthenticated} = useAuth();
-  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const trace = PerformanceMonitor.startTrace('PostListScreenMount');
@@ -74,7 +74,7 @@ export const PostListScreen = () => {
           {
             text: 'Log In',
             onPress: () => {
-              (navigation as any).navigate('Auth');
+              navigation.navigate('Auth', { screen: 'Login' });
             },
           },
         ],
@@ -83,12 +83,12 @@ export const PostListScreen = () => {
       return;
     }
     navigation.navigate('CreatePost');
-  }, [navigation, isAuthenticated, dispatch]);
+  }, [navigation, isAuthenticated]);
 
   const renderPostItem = useCallback(({item}: {item: Post}) => (
     <PostCard
       post={item}
-      onPress={() => (navigation as any).navigate('PostDetails', {postId: item.id})}
+      onPress={() => navigation.navigate('PostDetails', {postId: item.id})}
     />
   ), [navigation]);
 
